@@ -1,0 +1,30 @@
+export type TransactionType = "depense" | "revenu";
+
+export type Transaction = {
+  id: string;
+  titre: string;
+  categorie: string;
+  montant: number;
+  date: string;
+  type: TransactionType;
+  compte: string;
+};
+
+export type Subscription = {
+  id: string;
+  nom: string;
+  categorie: string;
+  montant: number;
+  periodicite: "mensuel" | "annuel";
+  prochainPaiement: string;
+  actif: boolean;
+};
+
+export type Settings = {
+  soldeInitial: number;
+  devise: string;
+};
+
+export type DashboardState = {
+  soldeBanque: number;
+};
