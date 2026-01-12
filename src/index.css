@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply text-slate-900 antialiased;
+  background: radial-gradient(circle at top, #f7f8fc 0%, #eef1f8 45%, #f8fafc 100%);
+}
+
+.glass-card {
+  @apply rounded-3xl border border-white/50 bg-white/70 shadow-glass backdrop-blur-xl;
+}
+
+.glass-panel {
+  @apply rounded-2xl border border-white/40 bg-white/60 shadow-glass backdrop-blur-lg;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
