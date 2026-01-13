@@ -58,13 +58,13 @@ export function DashboardPage() {
             <CardTitle className="text-3xl">{formatCurrency(dashboard.soldeBanque)}</CardTitle>
           </CardHeader>
           <div className="space-y-3">
+            <p className="text-xs text-slate-500">Mis à jour manuellement.</p>
             <Input
               value={soldeBanque}
               onChange={(event) => setSoldeBanque(event.target.value)}
               onBlur={handleBankBalance}
               placeholder="Entrer le solde bancaire"
             />
-            <p className="text-xs text-slate-500">Mis à jour manuellement.</p>
           </div>
         </Card>
         <Card>

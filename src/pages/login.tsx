@@ -1,32 +1,19 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 
-const schema = z.object({
-  email: z.string().email("Adresse email invalide"),
-  motDePasse: z.string().min(4, "Mot de passe trop court"),
-});
-
-type FormValues = z.infer<typeof schema>;
-
 export function LoginPage() {
   const navigate = useNavigate();
   const { connexion } = useAuth();
   const [erreur, setErreur] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const onSubmit = (data: FormValues) => {
-    const ok = connexion(data.email, data.motDePasse);
+  const onSubmit = () => {
+    const ok = connexion(email, password);
     if (ok) {
       navigate("/dashboard");
     } else {
@@ -65,21 +52,17 @@ export function LoginPage() {
               Accédez à votre espace financier confidentiel.
             </p>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Adresse email</label>
-              <Input type="email" placeholder="vous@exemple.ch" {...register("email")} />
-              {errors.email && <p className="text-xs text-rose-500">{errors.email.message}</p>}
+              <Input type="email" onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.ch" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Mot de passe</label>
-              <Input type="password" placeholder="Votre mot de passe" {...register("motDePasse")} />
-              {errors.motDePasse && (
-                <p className="text-xs text-rose-500">{errors.motDePasse.message}</p>
-              )}
+              <Input type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Votre mot de passe" />
             </div>
             {erreur && <p className="text-sm text-rose-500">{erreur}</p>}
-            <Button type="submit" className="w-full">
+            <Button onClick={onSubmit} className="w-full">
               Se connecter
             </Button>
           </form>
