@@ -1,14 +1,17 @@
 import { useMemo, useState } from "react";
-import { Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar } from "recharts";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ArrowLeftRight, Repeat } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Amount } from "@/components/ui/amount";
+import { axisTick, chartColors, tooltipStyle } from "@/lib/chart";
 import { useFinanceData } from "@/data/use-finance-data";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { categories } from "@/data/demo";
 
 export function DashboardPage() {
+  const navigate = useNavigate();
   const {
     transactions,
     dashboard,
@@ -21,26 +24,32 @@ export function DashboardPage() {
   const [soldeBanque, setSoldeBanque] = useState(dashboard.soldeBanque.toString());
 
   const depensesParCategorie = useMemo(() => {
-    return categories.map((categorie) => {
-      const total = transactions
-        .filter((t) => t.type === "depense" && t.categorie === categorie)
-        .reduce((acc, t) => acc + t.montant, 0);
-      return { name: categorie, value: total };
-    });
+    const totaux = new Map<string, number>();
+    transactions
+      .filter((t) => t.type === "depense")
+      .forEach((t) => totaux.set(t.categorie, (totaux.get(t.categorie) ?? 0) + t.montant));
+    return Array.from(totaux.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
   }, [transactions]);
+
+  const maxCategorie = depensesParCategorie[0]?.value ?? 0;
 
   const netMensuel = useMemo(() => {
     const mois = new Map<string, number>();
     transactions.forEach((t) => {
       const key = t.date.slice(0, 7);
-      const current = mois.get(key) ?? 0;
       const delta = t.type === "revenu" ? t.montant : -t.montant;
-      mois.set(key, current + delta);
+      mois.set(key, (mois.get(key) ?? 0) + delta);
     });
-    return Array.from(mois.entries()).map(([mois, net]) => ({ mois, net }));
+    return Array.from(mois.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([mois, net]) => ({ mois, net }));
   }, [transactions]);
 
-  const recentTransactions = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const recentTransactions = [...transactions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 6);
 
   const handleBankBalance = () => {
     const value = Number(soldeBanque);
@@ -50,124 +59,187 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardDescription>Solde bancaire</CardDescription>
-            <CardTitle className="text-3xl">{formatCurrency(dashboard.soldeBanque)}</CardTitle>
-          </CardHeader>
-          <div className="space-y-3">
+    <div className="mx-auto max-w-6xl space-y-6">
+      {/* Rapprochement : la ligne de vérité du journal */}
+      <section
+        aria-label="Rapprochement bancaire"
+        className="grid divide-y divide-line rounded-md border border-line bg-surface sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+      >
+        <div className="p-5">
+          <p className="text-[13px] text-ink-soft">Solde bancaire</p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight text-ink">
+            {formatCurrency(dashboard.soldeBanque)}
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <label htmlFor="solde-banque" className="sr-only">
+              Mettre à jour le solde bancaire
+            </label>
             <Input
+              id="solde-banque"
+              inputMode="decimal"
+              className="h-8 max-w-[10rem] font-mono text-[13px]"
               value={soldeBanque}
               onChange={(event) => setSoldeBanque(event.target.value)}
               onBlur={handleBankBalance}
-              placeholder="Entrer le solde bancaire"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") (event.target as HTMLInputElement).blur();
+              }}
             />
-            <p className="text-xs text-slate-500">Mis à jour manuellement.</p>
+            <span className="text-xs text-ink-faint">saisi manuellement</span>
           </div>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Solde attendu</CardDescription>
-            <CardTitle className="text-3xl">{formatCurrency(soldeAttendu)}</CardTitle>
-          </CardHeader>
-          <div className="space-y-2 text-sm text-slate-600">
-            <p>Revenus : {formatCurrency(totalRevenus)}</p>
-            <p>Dépenses : {formatCurrency(totalDepenses)}</p>
-          </div>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Écart détecté</CardDescription>
-            <CardTitle className={`text-3xl ${difference === 0 ? "text-emerald-500" : "text-rose-500"}`}>
-              {formatCurrency(difference)}
-            </CardTitle>
-          </CardHeader>
-          <p className="text-sm text-slate-500">
-            {difference === 0
-              ? "Aucun écart, tout est aligné."
-              : "Un écart indique des dépenses manquantes ou inconnues."}
+        </div>
+        <div className="p-5">
+          <p className="text-[13px] text-ink-soft">Solde attendu</p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight text-ink">
+            {formatCurrency(soldeAttendu)}
           </p>
-        </Card>
-      </div>
+          <dl className="mt-3 space-y-1 text-[13px]">
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="text-ink-soft">Revenus</dt>
+              <dd>
+                <Amount value={totalRevenus} tone="revenu" className="text-[13px]" />
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="text-ink-soft">Dépenses</dt>
+              <dd>
+                <Amount value={totalDepenses} tone="depense" className="text-[13px]" />
+              </dd>
+            </div>
+          </dl>
+        </div>
+        <div className="p-5">
+          <p className="text-[13px] text-ink-soft">Écart</p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight">
+            <Amount
+              value={difference}
+              tone={difference === 0 ? "neutral" : "signed"}
+              className="text-2xl"
+            />
+          </p>
+          <p className="mt-3 text-xs leading-relaxed text-ink-faint">
+            {difference === 0
+              ? "Aucun écart : le journal correspond au relevé bancaire."
+              : "Un écart signale des opérations manquantes ou inconnues."}
+          </p>
+        </div>
+      </section>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Net mensuel</CardTitle>
-            <CardDescription>Revenus moins dépenses par mois.</CardDescription>
+            <CardDescription>Revenus moins dépenses, par mois.</CardDescription>
           </CardHeader>
-          <div className="h-64">
+          <div className="h-60">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={netMensuel}>
-                <XAxis dataKey="mois" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                <Bar dataKey="net" fill="#111827" radius={[12, 12, 0, 0]} />
+              <BarChart data={netMensuel} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+                <XAxis dataKey="mois" tick={axisTick} axisLine={{ stroke: chartColors.line }} tickLine={false} />
+                <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} />
+                <Tooltip
+                  formatter={(value) => [formatCurrency(Number(value)), "Net"]}
+                  contentStyle={tooltipStyle}
+                  cursor={{ fill: "rgba(26, 29, 41, 0.04)" }}
+                />
+                <Bar dataKey="net" fill={chartColors.ink} radius={[2, 2, 0, 0]} maxBarSize={36} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Dépenses par catégorie</CardTitle>
-            <CardDescription>Vue synthétique des dépenses.</CardDescription>
+            <CardDescription>Classées de la plus lourde à la plus légère.</CardDescription>
           </CardHeader>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={depensesParCategorie} dataKey="value" nameKey="name" innerRadius={40} outerRadius={80} fill="#0f172a" />
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+          {depensesParCategorie.length === 0 ? (
+            <p className="text-sm text-ink-soft">
+              Aucune dépense enregistrée pour l'instant.
+            </p>
+          ) : (
+            <ol className="space-y-3">
+              {depensesParCategorie.slice(0, 6).map((categorie) => (
+                <li key={categorie.name}>
+                  <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                    <span className="text-ink">{categorie.name}</span>
+                    <span className="font-mono tabular-nums text-ink">
+                      {formatCurrency(categorie.value)}
+                    </span>
+                  </div>
+                  <div className="mt-1 h-1 rounded-full bg-sunken">
+                    <div
+                      className="h-1 rounded-full bg-ink"
+                      style={{ width: `${maxCategorie ? (categorie.value / maxCategorie) * 100 : 0}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
+        <Card className="p-0 lg:col-span-2">
+          <CardHeader className="border-b border-line px-5 pb-4 pt-5">
             <CardTitle>Transactions récentes</CardTitle>
-            <CardDescription>Les dernières opérations enregistrées.</CardDescription>
+            <CardDescription>Les six dernières opérations enregistrées.</CardDescription>
           </CardHeader>
-          <div className="space-y-3">
-            {recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="glass-panel flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold">{transaction.titre}</p>
-                  <p className="text-xs text-slate-500">
-                    {transaction.categorie} • {formatDate(transaction.date)}
-                  </p>
-                </div>
-                <span className={transaction.type === "revenu" ? "text-emerald-500" : "text-rose-500"}>
-                  {transaction.type === "revenu" ? "+" : "-"}
-                  {formatCurrency(transaction.montant)}
-                </span>
-              </div>
-            ))}
-          </div>
+          {recentTransactions.length === 0 ? (
+            <p className="px-5 pb-5 text-sm text-ink-soft">
+              Le journal est vide. Ajoutez votre première opération depuis la page Transactions.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <caption className="sr-only">Transactions récentes</caption>
+              <tbody>
+                {recentTransactions.map((transaction) => (
+                  <tr key={transaction.id} className="border-b border-line last:border-b-0">
+                    <td className="whitespace-nowrap py-2.5 pl-5 pr-3 font-mono text-xs tabular-nums text-ink-faint">
+                      {formatDate(transaction.date)}
+                    </td>
+                    <td className="px-3 py-2.5 font-medium text-ink">{transaction.titre}</td>
+                    <td className="hidden px-3 py-2.5 text-[13px] text-ink-soft sm:table-cell">
+                      {transaction.categorie}
+                    </td>
+                    <td className="py-2.5 pl-3 pr-5 text-right">
+                      <Amount
+                        value={transaction.montant}
+                        tone={transaction.type === "revenu" ? "revenu" : "depense"}
+                        className="text-[13px]"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Actions rapides</CardTitle>
-            <CardDescription>Ajoutez une entrée en un clic.</CardDescription>
+            <CardTitle>Saisie rapide</CardTitle>
+            <CardDescription>Ouvre le formulaire pré-rempli sur la bonne page.</CardDescription>
           </CardHeader>
-          <div className="space-y-3">
-            <Button className="w-full">Ajouter une dépense</Button>
-            <Button className="w-full" variant="outline">
+          <div className="space-y-2">
+            <Button className="w-full" onClick={() => navigate("/transactions?ajouter=depense")}>
+              <ArrowLeftRight className="h-4 w-4" aria-hidden />
+              Ajouter une dépense
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/transactions?ajouter=revenu")}
+            >
+              <ArrowLeftRight className="h-4 w-4" aria-hidden />
               Ajouter un revenu
             </Button>
-            <Button className="w-full" variant="ghost">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/subscriptions?ajouter=1")}
+            >
+              <Repeat className="h-4 w-4" aria-hidden />
               Enregistrer un abonnement
             </Button>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl bg-white/70 p-3 text-xs text-slate-500"
-            >
-              Les actions rapides ouvrent des formulaires dans les autres pages.
-            </motion.div>
           </div>
         </Card>
       </div>

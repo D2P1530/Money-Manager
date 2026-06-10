@@ -7,20 +7,22 @@
 }
 
 body {
-  @apply text-slate-900 antialiased;
-  background: radial-gradient(circle at top, #f7f8fc 0%, #eef1f8 45%, #f8fafc 100%);
+  @apply bg-paper text-ink antialiased;
+  font-kerning: normal;
 }
 
-.glass-card {
-  @apply rounded-3xl border border-white/50 bg-white/70 shadow-glass backdrop-blur-xl;
-}
+/* Figures everywhere align to the digit, even outside .font-mono */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
 
-.glass-panel {
-  @apply rounded-2xl border border-white/40 bg-white/60 shadow-glass backdrop-blur-lg;
-}
-
-.text-balance {
-  text-wrap: balance;
+  select:focus-visible,
+  a:focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-1 ring-offset-paper;
+  }
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
@@ -30,4 +32,15 @@ body {
 .scrollbar-hidden {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -46,3 +46,6 @@ coverage/
 
 # OneDrive cache
 ~$*
+
+# Screenshots de verification visuelle
+.screenshots/

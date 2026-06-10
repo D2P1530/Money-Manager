@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { useAuth } from "@/contexts/auth-context";
 
 const schema = z.object({
@@ -30,60 +30,95 @@ export function LoginPage() {
     if (ok) {
       navigate("/dashboard");
     } else {
-      setErreur("Identifiants incorrects. Essayez demo@journal.local / demo123.");
+      setErreur("Identifiants incorrects. Utilisez les accès de démonstration ci-contre.");
     }
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-between px-6 py-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="hidden max-w-xl space-y-4 lg:block"
-        >
-          <h1 className="text-4xl font-semibold text-balance">
-            Journal financier privé, fluide et élégant.
+    <div className="grid min-h-screen lg:grid-cols-[1fr_minmax(0,28rem)]">
+      <div className="hidden flex-col justify-between border-r border-line bg-sunken px-12 py-10 lg:flex">
+        <div>
+          <p className="text-[15px] font-semibold tracking-tight text-ink">Journal financier</p>
+          <p className="font-mono text-[11px] text-ink-faint">privé · local · fr-CH</p>
+        </div>
+        <div className="max-w-md space-y-6">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-ink">
+            Vos finances, au centime près.
           </h1>
-          <p className="text-slate-600">
-            Centralisez vos revenus, dépenses et abonnements avec une vue claire des écarts.
+          <p className="text-[15px] leading-relaxed text-ink-soft">
+            Revenus, dépenses et abonnements dans un seul registre. Le solde attendu se
+            confronte au relevé bancaire ; chaque écart se voit immédiatement.
           </p>
-          <div className="glass-card space-y-2 p-6">
-            <p className="text-sm text-slate-500">Astuce de démonstration</p>
-            <p className="text-sm font-semibold">demo@journal.local</p>
-            <p className="text-sm font-semibold">mot de passe : demo123</p>
-          </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card w-full max-w-md space-y-6 p-8"
-        >
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold">Connexion</h2>
-            <p className="text-sm text-slate-500">
-              Accédez à votre espace financier confidentiel.
+          <div className="max-w-xs rounded-md border border-line bg-surface">
+            <p className="border-b border-line px-4 py-2 text-xs font-medium text-ink-soft">
+              Accès de démonstration
             </p>
+            <dl className="space-y-1 px-4 py-3 font-mono text-[13px] text-ink">
+              <div className="flex justify-between gap-6">
+                <dt className="text-ink-faint">email</dt>
+                <dd>demo@journal.local</dd>
+              </div>
+              <div className="flex justify-between gap-6">
+                <dt className="text-ink-faint">mot de passe</dt>
+                <dd>demo123</dd>
+              </div>
+            </dl>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Adresse email</label>
-              <Input type="email" placeholder="vous@exemple.ch" {...register("email")} />
-              {errors.email && <p className="text-xs text-rose-500">{errors.email.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Mot de passe</label>
-              <Input type="password" placeholder="Votre mot de passe" {...register("motDePasse")} />
-              {errors.motDePasse && (
-                <p className="text-xs text-rose-500">{errors.motDePasse.message}</p>
+        </div>
+        <p className="font-mono text-[11px] text-ink-faint">
+          Données stockées localement — aucun serveur.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-center px-6 py-10">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 lg:hidden">
+            <p className="text-[15px] font-semibold tracking-tight text-ink">Journal financier</p>
+            <p className="font-mono text-[11px] text-ink-faint">privé · local · fr-CH</p>
+          </div>
+          <h2 className="text-xl font-semibold tracking-tight text-ink">Connexion</h2>
+          <p className="mt-1 text-sm text-ink-soft">Accédez à votre registre confidentiel.</p>
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <Field label="Adresse email" error={errors.email?.message}>
+              {(fieldProps) => (
+                <Input
+                  {...fieldProps}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="vous@exemple.ch"
+                  {...register("email")}
+                />
               )}
-            </div>
-            {erreur && <p className="text-sm text-rose-500">{erreur}</p>}
+            </Field>
+            <Field label="Mot de passe" error={errors.motDePasse?.message}>
+              {(fieldProps) => (
+                <Input
+                  {...fieldProps}
+                  type="password"
+                  autoComplete="current-password"
+                  {...register("motDePasse")}
+                />
+              )}
+            </Field>
+            {erreur && (
+              <p
+                role="alert"
+                className="rounded border border-negative/30 bg-negative-soft px-3 py-2 text-[13px] text-negative"
+              >
+                {erreur}
+              </p>
+            )}
             <Button type="submit" className="w-full">
               Se connecter
             </Button>
           </form>
-        </motion.div>
+          <div className="mt-6 rounded-md border border-line bg-sunken px-4 py-3 lg:hidden">
+            <p className="text-xs font-medium text-ink-soft">Accès de démonstration</p>
+            <p className="mt-1 font-mono text-[13px] text-ink">
+              demo@journal.local · demo123
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

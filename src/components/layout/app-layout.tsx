@@ -1,19 +1,39 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import {
+  ArrowLeftRight,
+  ChartLine,
+  LayoutDashboard,
+  LogOut,
+  Repeat,
+  Settings,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
 const navItems = [
-  { label: "Tableau de bord", to: "/dashboard" },
-  { label: "Transactions", to: "/transactions" },
-  { label: "Abonnements", to: "/subscriptions" },
-  { label: "Analyses", to: "/analytics" },
-  { label: "Paramètres", to: "/settings" },
+  { label: "Tableau de bord", to: "/dashboard", icon: LayoutDashboard },
+  { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
+  { label: "Abonnements", to: "/subscriptions", icon: Repeat },
+  { label: "Analyses", to: "/analytics", icon: ChartLine },
+  { label: "Paramètres", to: "/settings", icon: Settings },
 ];
+
+const shortLabels: Record<string, string> = {
+  "/dashboard": "Tableau",
+  "/transactions": "Transactions",
+  "/subscriptions": "Abonnements",
+  "/analytics": "Analyses",
+  "/settings": "Paramètres",
+};
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { deconnexion } = useAuth();
+
+  const pageTitle =
+    navItems.find((item) => location.pathname.startsWith(item.to))?.label ?? "Journal";
+  const today = new Intl.DateTimeFormat("fr-CH", { dateStyle: "long" }).format(new Date());
 
   const handleLogout = () => {
     deconnexion();
@@ -21,30 +41,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 lg:px-8">
-        <aside className="hidden w-64 flex-col gap-6 lg:flex">
-          <div className="glass-card p-6">
-            <div className="text-lg font-semibold">Journal privé</div>
-            <p className="mt-1 text-sm text-slate-500">
-              Vue d'ensemble des finances personnelles.
-            </p>
+    <div className="min-h-screen lg:grid lg:grid-cols-[230px_1fr]">
+      <aside className="hidden border-r border-line bg-sunken lg:flex lg:flex-col">
+        <div className="sticky top-0 flex h-screen flex-col px-4 py-6">
+          <div className="px-3">
+            <p className="text-[15px] font-semibold tracking-tight text-ink">Journal financier</p>
+            <p className="font-mono text-[11px] text-ink-faint">privé · local · fr-CH</p>
           </div>
-          <nav className="glass-card p-4">
-            <ul className="space-y-2">
+          <nav aria-label="Navigation principale" className="mt-8 flex-1">
+            <ul className="space-y-0.5">
               {navItems.map((item) => (
                 <li key={item.to}>
                   <NavLink
                     to={item.to}
                     className={({ isActive }) =>
                       cn(
-                        "block rounded-2xl px-4 py-3 text-sm font-medium transition",
+                        "flex items-center gap-2.5 rounded border px-3 py-2 text-sm transition-colors duration-150",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                         isActive
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-white/70"
+                          ? "border-line bg-surface font-medium text-ink"
+                          : "border-transparent text-ink-soft hover:bg-surface/60 hover:text-ink"
                       )
                     }
                   >
+                    <item.icon className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden />
                     {item.label}
                   </NavLink>
                 </li>
@@ -53,45 +73,58 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
           <button
             onClick={handleLogout}
-            className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 shadow-glass transition hover:-translate-y-0.5"
+            className="flex items-center gap-2.5 rounded border border-transparent px-3 py-2 text-sm text-ink-soft transition-colors duration-150 hover:bg-surface/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
+            <LogOut className="h-4 w-4 text-ink-faint" aria-hidden />
             Se déconnecter
           </button>
-        </aside>
-        <div className="flex-1 space-y-6">
-          <header className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">Gestionnaire de budget</h1>
-              <p className="text-sm text-slate-500">
-                Maîtrisez votre trésorerie avec une vue claire et sereine.
-              </p>
-            </div>
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="hidden rounded-full border border-white/70 bg-white/60 px-4 py-2 text-xs text-slate-600 shadow-glass md:flex"
-            >
-              Journal privé • Confidentiel
-            </motion.div>
-          </header>
-          <main>{children}</main>
         </div>
+      </aside>
+
+      <div className="flex min-h-screen flex-col">
+        <header className="border-b border-line bg-surface">
+          <div className="flex items-center justify-between px-4 py-4 lg:px-8">
+            <div>
+              <p className="text-[13px] font-semibold tracking-tight text-ink lg:hidden">
+                Journal financier
+              </p>
+              <h1 className="text-lg font-semibold tracking-tight text-ink">{pageTitle}</h1>
+            </div>
+            <p className="hidden font-mono text-xs text-ink-faint sm:block">{today}</p>
+          </div>
+        </header>
+        <main className="flex-1 px-4 py-6 pb-24 lg:px-8 lg:pb-8">{children}</main>
       </div>
-      <nav className="fixed bottom-4 left-1/2 z-50 flex w-[90%] max-w-md -translate-x-1/2 items-center justify-between rounded-full border border-white/70 bg-white/80 px-4 py-3 shadow-glass backdrop-blur-xl lg:hidden">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                "rounded-full px-3 py-2 text-xs font-medium",
-                isActive ? "bg-slate-900 text-white" : "text-slate-600"
-              )
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
+
+      <nav
+        aria-label="Navigation principale"
+        className="fixed inset-x-0 bottom-0 z-sticky border-t border-line bg-surface lg:hidden"
+      >
+        <ul className="flex">
+          {navItems.map((item) => (
+            <li key={item.to} className="flex-1">
+              <NavLink
+                to={item.to}
+                className={({ isActive }) =>
+                  cn(
+                    "flex flex-col items-center gap-1 px-1 pb-2.5 pt-2 text-[10px] font-medium transition-colors duration-150",
+                    isActive ? "text-ink" : "text-ink-faint"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <item.icon
+                      className={cn("h-5 w-5", isActive ? "text-accent" : "text-ink-faint")}
+                      aria-hidden
+                    />
+                    {shortLabels[item.to]}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
       </nav>
     </div>
   );

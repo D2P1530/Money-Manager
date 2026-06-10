@@ -1,31 +1,72 @@
-import { motion } from "framer-motion";
+import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { X } from "lucide-react";
 
-export function Modal({ open, onClose, title, children }: {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+}: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
 }) {
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-sm">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-modal flex items-center justify-center bg-ink/40 p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass-card w-full max-w-lg space-y-4 p-6"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        initial={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.985, y: 4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
+        className="w-full max-w-md rounded-md border border-line bg-surface shadow-xl shadow-ink/10 focus:outline-none"
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{title}</h2>
+        <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+          <h2 id={titleId} className="text-[15px] font-semibold tracking-tight text-ink">
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-600"
+            aria-label="Fermer"
+            className="rounded p-1 text-ink-soft transition-colors duration-150 hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            Fermer
+            <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
-        {children}
+        <div className="px-5 py-4">{children}</div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }

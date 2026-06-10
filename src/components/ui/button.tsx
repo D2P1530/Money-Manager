@@ -1,22 +1,35 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "default" | "outline" | "ghost";
+  variant?: "default" | "outline" | "ghost" | "danger";
+  size?: "md" | "sm";
 };
 
-export function Button({ className, variant = "default", ...props }: ButtonProps) {
-  return (
-    <button
-      className={cn(
-        "rounded-2xl px-4 py-2 text-sm font-semibold transition",
-        variant === "default" &&
-          "bg-slate-900 text-white shadow-glass hover:-translate-y-0.5",
-        variant === "outline" &&
-          "border border-white/70 bg-white/70 text-slate-700 shadow-glass hover:bg-white",
-        variant === "ghost" && "text-slate-600 hover:bg-white/60",
-        className
-      )}
-      {...props}
-    />
-  );
-}
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = "default", size = "md", type = "button", ...props }, ref) => {
+    return (
+      <button
+        ref={ref}
+        type={type}
+        className={cn(
+          "inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors duration-150",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-paper",
+          "disabled:pointer-events-none disabled:opacity-50",
+          size === "md" && "h-9 px-4 text-sm",
+          size === "sm" && "h-7 px-2.5 text-xs",
+          variant === "default" && "bg-ink text-paper hover:bg-ink/85 active:bg-ink",
+          variant === "outline" &&
+            "border border-line-strong bg-surface text-ink hover:bg-sunken active:bg-line/60",
+          variant === "ghost" && "text-ink-soft hover:bg-sunken hover:text-ink active:bg-line/60",
+          variant === "danger" &&
+            "text-negative hover:bg-negative-soft active:bg-negative-soft/80",
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = "Button";

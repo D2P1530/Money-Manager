@@ -4,23 +4,36 @@ type TabsProps = {
   tabs: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
+  "aria-label"?: string;
 };
 
-export function Tabs({ tabs, value, onChange }: TabsProps) {
+export function Tabs({ tabs, value, onChange, "aria-label": ariaLabel }: TabsProps) {
   return (
-    <div className="flex flex-wrap gap-2 rounded-2xl border border-white/60 bg-white/60 p-2 shadow-glass">
-      {tabs.map((tab) => (
-        <button
-          key={tab.value}
-          onClick={() => onChange(tab.value)}
-          className={cn(
-            "rounded-2xl px-4 py-2 text-sm font-semibold transition",
-            value === tab.value ? "bg-slate-900 text-white" : "text-slate-600"
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div
+      role="tablist"
+      aria-label={ariaLabel}
+      className="inline-flex h-9 items-center gap-0.5 rounded border border-line bg-sunken p-0.5"
+    >
+      {tabs.map((tab) => {
+        const active = value === tab.value;
+        return (
+          <button
+            key={tab.value}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(tab.value)}
+            className={cn(
+              "h-full rounded-sm px-3 text-[13px] font-medium transition-colors duration-150",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+              active
+                ? "border border-line bg-surface text-ink"
+                : "text-ink-soft hover:text-ink"
+            )}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
