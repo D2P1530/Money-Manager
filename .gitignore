@@ -1,0 +1,48 @@
+# Node dependencies
+node_modules/
+
+# Build output
+dist/
+.vite/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Local environment
+.DS_Store
+
+# MacOS files
+.AppleDouble
+.LSOverride
+
+# JetBrains IDE files
+*.iml
+
+# Misc
+coverage/
+
+# OneDrive cache
+~$*
