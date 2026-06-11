@@ -1,18 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Check, LogOut } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Field } from "@/components/ui/field";
-import { useAuth } from "@/contexts/auth-context";
 import { useFinanceData } from "@/data/use-finance-data";
 import { formatCurrency } from "@/lib/utils";
 
 export function SettingsPage() {
-  const navigate = useNavigate();
-  const { deconnexion } = useAuth();
   const { settings, setSettings, soldeAttendu } = useFinanceData();
   const [soldeInitial, setSoldeInitial] = useState(settings.soldeInitial.toString());
   const [devise, setDevise] = useState(settings.devise);
@@ -28,11 +24,6 @@ export function SettingsPage() {
     setEnregistre(true);
     window.clearTimeout(timeoutRef.current);
     timeoutRef.current = window.setTimeout(() => setEnregistre(false), 2500);
-  };
-
-  const handleLogout = () => {
-    deconnexion();
-    navigate("/login");
   };
 
   return (
@@ -87,18 +78,6 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Session</CardTitle>
-          <CardDescription>
-            Les données restent stockées localement dans ce navigateur.
-          </CardDescription>
-        </CardHeader>
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut className="h-4 w-4" aria-hidden />
-          Se déconnecter
-        </Button>
-      </Card>
     </div>
   );
 }

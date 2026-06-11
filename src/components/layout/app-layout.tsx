@@ -1,14 +1,12 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   ArrowLeftRight,
   ChartLine,
   LayoutDashboard,
-  LogOut,
   Repeat,
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/auth-context";
 
 const navItems = [
   { label: "Tableau de bord", to: "/dashboard", icon: LayoutDashboard },
@@ -27,18 +25,11 @@ const shortLabels: Record<string, string> = {
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { deconnexion } = useAuth();
 
   const pageTitle =
     navItems.find((item) => location.pathname.startsWith(item.to))?.label ?? "Journal";
   const today = new Intl.DateTimeFormat("fr-CH", { dateStyle: "long" }).format(new Date());
-
-  const handleLogout = () => {
-    deconnexion();
-    navigate("/login");
-  };
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[230px_1fr]">
@@ -71,13 +62,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               ))}
             </ul>
           </nav>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 rounded border border-transparent px-3 py-2 text-sm text-ink-soft transition-colors duration-150 hover:bg-surface/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <LogOut className="h-4 w-4 text-ink-faint" aria-hidden />
-            Se déconnecter
-          </button>
         </div>
       </aside>
 
