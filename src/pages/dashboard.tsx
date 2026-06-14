@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Amount } from "@/components/ui/amount";
 import { axisTick, chartColors, tooltipStyle } from "@/lib/chart";
 import { useFinanceData } from "@/data/use-finance-data";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -58,19 +58,22 @@ export function DashboardPage() {
     }
   };
 
+  const ecartEquilibre = difference === 0;
+  const ecartPositif = difference > 0;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Rapprochement : la ligne de vérité du journal */}
       <section
         aria-label="Rapprochement bancaire"
-        className="grid divide-y divide-line rounded-md border border-line bg-surface sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+        className="grid overflow-hidden rounded-lg border border-line sm:grid-cols-3"
       >
-        <div className="p-5">
-          <p className="text-[13px] text-ink-soft">Solde bancaire</p>
-          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight text-ink">
+        <div className="border-b border-line bg-surface p-6 sm:border-b-0 sm:border-r">
+          <p className="text-[11px] font-medium text-ink-faint">Solde bancaire</p>
+          <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums tracking-tight text-ink">
             {formatCurrency(dashboard.soldeBanque)}
           </p>
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-4 flex items-center gap-2">
             <label htmlFor="solde-banque" className="sr-only">
               Mettre à jour le solde bancaire
             </label>
@@ -88,12 +91,13 @@ export function DashboardPage() {
             <span className="text-xs text-ink-faint">saisi manuellement</span>
           </div>
         </div>
-        <div className="p-5">
-          <p className="text-[13px] text-ink-soft">Solde attendu</p>
-          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight text-ink">
+
+        <div className="border-b border-line bg-surface p-6 sm:border-b-0 sm:border-r">
+          <p className="text-[11px] font-medium text-ink-faint">Solde attendu</p>
+          <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums tracking-tight text-ink">
             {formatCurrency(soldeAttendu)}
           </p>
-          <dl className="mt-3 space-y-1 text-[13px]">
+          <dl className="mt-4 space-y-1 text-[13px]">
             <div className="flex items-baseline justify-between gap-4">
               <dt className="text-ink-soft">Revenus</dt>
               <dd>
@@ -108,17 +112,22 @@ export function DashboardPage() {
             </div>
           </dl>
         </div>
-        <div className="p-5">
-          <p className="text-[13px] text-ink-soft">Écart</p>
-          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight">
-            <Amount
-              value={difference}
-              tone={difference === 0 ? "neutral" : "signed"}
-              className="text-2xl"
-            />
+
+        {/* Écart — focal point sombre : le signal le plus critique du journal */}
+        <div className="bg-ink p-6">
+          <p className="text-[11px] font-medium text-paper/45">Écart</p>
+          <p
+            className={cn(
+              "mt-1.5 font-mono text-4xl font-semibold tabular-nums tracking-tight",
+              ecartEquilibre || ecartPositif ? "text-positive-soft" : "text-negative-soft"
+            )}
+          >
+            {ecartEquilibre
+              ? formatCurrency(0)
+              : `${ecartPositif ? "+" : "−"}${formatCurrency(Math.abs(difference))}`}
           </p>
-          <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            {difference === 0
+          <p className="mt-4 text-xs leading-relaxed text-paper/45">
+            {ecartEquilibre
               ? "Aucun écart : le journal correspond au relevé bancaire."
               : "Un écart signale des opérations manquantes ou inconnues."}
           </p>
@@ -134,27 +143,31 @@ export function DashboardPage() {
           <div className="h-60">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={netMensuel} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-                <XAxis dataKey="mois" tick={axisTick} axisLine={{ stroke: chartColors.line }} tickLine={false} />
+                <XAxis
+                  dataKey="mois"
+                  tick={axisTick}
+                  axisLine={{ stroke: chartColors.line }}
+                  tickLine={false}
+                />
                 <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} />
                 <Tooltip
                   formatter={(value) => [formatCurrency(Number(value)), "Net"]}
                   contentStyle={tooltipStyle}
                   cursor={{ fill: "rgba(26, 29, 41, 0.04)" }}
                 />
-                <Bar dataKey="net" fill={chartColors.ink} radius={[2, 2, 0, 0]} maxBarSize={36} />
+                <Bar dataKey="net" fill={chartColors.accent} radius={[2, 2, 0, 0]} maxBarSize={36} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
+
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Dépenses par catégorie</CardTitle>
             <CardDescription>Classées de la plus lourde à la plus légère.</CardDescription>
           </CardHeader>
           {depensesParCategorie.length === 0 ? (
-            <p className="text-sm text-ink-soft">
-              Aucune dépense enregistrée pour l'instant.
-            </p>
+            <p className="text-sm text-ink-soft">Aucune dépense enregistrée pour l'instant.</p>
           ) : (
             <ol className="space-y-3">
               {depensesParCategorie.slice(0, 6).map((categorie) => (
@@ -165,10 +178,12 @@ export function DashboardPage() {
                       {formatCurrency(categorie.value)}
                     </span>
                   </div>
-                  <div className="mt-1 h-1 rounded-full bg-sunken">
+                  <div className="mt-1.5 h-1.5 rounded-full bg-sunken">
                     <div
-                      className="h-1 rounded-full bg-ink"
-                      style={{ width: `${maxCategorie ? (categorie.value / maxCategorie) * 100 : 0}%` }}
+                      className="h-1.5 rounded-full bg-accent"
+                      style={{
+                        width: `${maxCategorie ? (categorie.value / maxCategorie) * 100 : 0}%`,
+                      }}
                     />
                   </div>
                 </li>
@@ -192,8 +207,14 @@ export function DashboardPage() {
             <table className="w-full text-sm">
               <caption className="sr-only">Transactions récentes</caption>
               <tbody>
-                {recentTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="border-b border-line last:border-b-0">
+                {recentTransactions.map((transaction, index) => (
+                  <tr
+                    key={transaction.id}
+                    className={cn(
+                      "border-b border-line last:border-b-0",
+                      index % 2 === 1 && "bg-sunken/50"
+                    )}
+                  >
                     <td className="whitespace-nowrap py-2.5 pl-5 pr-3 font-mono text-xs tabular-nums text-ink-faint">
                       {formatDate(transaction.date)}
                     </td>
@@ -214,6 +235,7 @@ export function DashboardPage() {
             </table>
           )}
         </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Saisie rapide</CardTitle>

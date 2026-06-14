@@ -15,7 +15,7 @@ import { Amount } from "@/components/ui/amount";
 import { categories } from "@/data/demo";
 import { useFinanceData } from "@/data/use-finance-data";
 import type { Transaction } from "@/data/types";
-import { formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const schema = z.object({
   titre: z.string().min(2, "Titre requis"),
@@ -201,16 +201,16 @@ export function TransactionsPage() {
           <table className="w-full text-left text-sm">
             <caption className="sr-only">Liste des transactions filtrées</caption>
             <thead>
-              <tr className="border-b border-line text-xs text-ink-faint">
-                <th scope="col" className="hidden py-2.5 pl-5 pr-3 font-medium sm:table-cell">
+              <tr className="border-b border-line bg-sunken text-xs text-ink-soft">
+                <th scope="col" className="hidden py-3 pl-5 pr-3 font-medium sm:table-cell">
                   Date
                 </th>
-                <th scope="col" className="py-2.5 pl-4 pr-3 font-medium sm:pl-3">Titre</th>
-                <th scope="col" className="hidden px-3 py-2.5 font-medium md:table-cell">
+                <th scope="col" className="py-3 pl-4 pr-3 font-medium sm:pl-3">Titre</th>
+                <th scope="col" className="hidden px-3 py-3 font-medium md:table-cell">
                   Catégorie
                 </th>
-                <th scope="col" className="px-3 py-2.5 text-right font-medium">Montant</th>
-                <th scope="col" className="py-2.5 pl-3 pr-5 text-right font-medium">
+                <th scope="col" className="px-3 py-3 text-right font-medium">Montant</th>
+                <th scope="col" className="py-3 pl-3 pr-5 text-right font-medium">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -235,14 +235,25 @@ export function TransactionsPage() {
                     <td className="hidden whitespace-nowrap py-2.5 pl-5 pr-3 font-mono text-xs tabular-nums text-ink-faint sm:table-cell">
                       {formatDate(transaction.date)}
                     </td>
-                    <td className="py-2.5 pl-4 pr-3 font-medium text-ink sm:px-3">
-                      {transaction.titre}
-                      <span className="block font-mono text-[11px] font-normal tabular-nums text-ink-faint sm:hidden">
+                    <td className="py-2.5 pl-4 pr-3 sm:px-3">
+                      <div className="flex items-center gap-2">
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            transaction.type === "revenu" ? "bg-positive" : "bg-negative"
+                          )}
+                        />
+                        <span className="font-medium text-ink">{transaction.titre}</span>
+                      </div>
+                      <span className="ml-3.5 block font-mono text-[11px] tabular-nums text-ink-faint sm:hidden">
                         {formatDate(transaction.date)}
                       </span>
                     </td>
-                    <td className="hidden px-3 py-2.5 text-[13px] text-ink-soft md:table-cell">
-                      {transaction.categorie}
+                    <td className="hidden px-3 py-2.5 md:table-cell">
+                      <span className="rounded-sm bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-ink-soft">
+                        {transaction.categorie}
+                      </span>
                     </td>
                     <td className="px-2 py-2.5 text-right sm:px-3">
                       {editionId === transaction.id ? (
@@ -255,7 +266,7 @@ export function TransactionsPage() {
                         <Amount
                           value={transaction.montant}
                           tone={transaction.type === "revenu" ? "revenu" : "depense"}
-                          className="text-[13px]"
+                          className="text-sm font-medium"
                         />
                       )}
                     </td>
@@ -303,16 +314,23 @@ export function TransactionsPage() {
             </tbody>
             {filtered.length > 0 && (
               <tfoot>
-                <tr className="bg-sunken/50 text-[13px]">
-                  <td colSpan={3} className="hidden py-2.5 pl-5 pr-3 text-ink-soft sm:table-cell">
+                <tr className="bg-ink text-[13px]">
+                  <td colSpan={3} className="hidden py-3 pl-5 pr-3 text-paper/45 sm:table-cell">
                     {filtered.length} opération{filtered.length > 1 ? "s" : ""} affichée
                     {filtered.length > 1 ? "s" : ""}
                   </td>
-                  <td className="py-2.5 pl-4 pr-3 text-ink-soft sm:hidden">
+                  <td className="py-3 pl-4 pr-3 text-paper/45 sm:hidden">
                     {filtered.length} op.
                   </td>
-                  <td className="px-3 py-2.5 text-right">
-                    <Amount value={totalFiltre} tone="signed" className="text-[13px] font-medium" />
+                  <td className="px-3 py-3 text-right">
+                    <span
+                      className={cn(
+                        "font-mono tabular-nums font-medium",
+                        totalFiltre >= 0 ? "text-positive-soft" : "text-negative-soft"
+                      )}
+                    >
+                      {totalFiltre >= 0 ? "+" : "−"}{formatCurrency(Math.abs(totalFiltre))}
+                    </span>
                   </td>
                   <td className="pl-3 pr-5" />
                 </tr>

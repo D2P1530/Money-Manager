@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Field } from "@/components/ui/field";
@@ -27,19 +26,32 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Configuration de départ</CardTitle>
-          <CardDescription>
-            Le solde initial sert de point zéro au calcul du solde attendu.
-          </CardDescription>
-        </CardHeader>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Solde initial"
-            hint={`Solde attendu actuel : ${formatCurrency(soldeAttendu, devise)}`}
-          >
+    <div className="mx-auto max-w-2xl">
+      <header className="mb-8 border-b border-line pb-6">
+        <h1 className="text-[22px] font-semibold tracking-tight text-ink">Paramètres</h1>
+        <p className="mt-1 text-[13px] text-ink-soft">
+          Journal financier privé — configuration globale
+        </p>
+      </header>
+
+      <div className="rounded-md border border-line bg-surface">
+        <div className="flex items-start justify-between gap-6 border-b border-line px-5 py-4">
+          <div>
+            <h2 className="text-[14px] font-semibold text-ink">Point de départ</h2>
+            <p className="mt-0.5 text-[12px] text-ink-soft">
+              Base de calcul du solde attendu
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="font-mono text-[22px] font-semibold tabular-nums leading-none text-ink">
+              {formatCurrency(soldeAttendu, devise)}
+            </p>
+            <p className="mt-1 text-[12px] text-ink-faint">solde attendu actuel</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 p-5 sm:grid-cols-2">
+          <Field label="Solde initial">
             {(fieldProps) => (
               <Input
                 {...fieldProps}
@@ -64,11 +76,12 @@ export function SettingsPage() {
             )}
           </Field>
         </div>
-        <div className="mt-4 flex items-center gap-3 border-t border-line pt-4">
+
+        <div className="flex items-center gap-3 rounded-b-md border-t border-line bg-sunken px-5 py-3.5">
           <Button onClick={handleSave}>Enregistrer</Button>
           <span
             role="status"
-            className={`flex items-center gap-1.5 text-[13px] text-positive transition-opacity duration-150 ${
+            className={`flex items-center gap-1.5 text-[13px] text-positive transition-opacity duration-200 ease-out-quart ${
               enregistre ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -76,8 +89,7 @@ export function SettingsPage() {
             Modifications enregistrées
           </span>
         </div>
-      </Card>
-
+      </div>
     </div>
   );
 }

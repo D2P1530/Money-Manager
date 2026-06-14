@@ -26,7 +26,7 @@ export function Tabs({ tabs, value, onChange, "aria-label": ariaLabel }: TabsPro
               "h-full rounded-sm px-3 text-[13px] font-medium transition-colors duration-150",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
               active
-                ? "border border-line bg-surface text-ink"
+                ? "bg-ink text-paper"
                 : "text-ink-soft hover:text-ink"
             )}
           >

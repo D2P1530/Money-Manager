@@ -13,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { categories } from "@/data/demo";
 import { useFinanceData } from "@/data/use-finance-data";
 import type { Subscription } from "@/data/types";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const schema = z.object({
   nom: z.string().min(2, "Nom requis"),
@@ -89,37 +89,41 @@ export function SubscriptionsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-          <div className="flex items-baseline gap-2">
-            <dt className="text-[13px] text-ink-soft">Actifs</dt>
-            <dd className="font-mono text-sm font-medium tabular-nums text-ink">
-              {actives.length}
-            </dd>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-[13px] text-ink-soft">Charge mensuelle</dt>
-            <dd className="font-mono text-sm font-medium tabular-nums text-ink">
-              {formatCurrency(totalMensuel)}
-            </dd>
-          </div>
-          {totalAnnuel > 0 && (
-            <div className="flex items-baseline gap-2">
-              <dt className="text-[13px] text-ink-soft">Charge annuelle</dt>
-              <dd className="font-mono text-sm font-medium tabular-nums text-ink">
-                {formatCurrency(totalAnnuel)}
-              </dd>
-            </div>
-          )}
-        </dl>
+      <div className="flex justify-end">
         <Button onClick={() => setModalOpen(true)}>
           <Plus className="h-4 w-4" aria-hidden />
           Ajouter un abonnement
         </Button>
       </div>
-      <p className="text-[13px] text-ink-soft">
-        Les paiements récurrents créent automatiquement des dépenses à chaque période.
-      </p>
+
+      <section
+        aria-label="Récapitulatif des abonnements"
+        className={cn(
+          "grid overflow-hidden rounded-lg border border-line bg-ink",
+          totalAnnuel > 0 ? "sm:grid-cols-3" : "sm:grid-cols-2"
+        )}
+      >
+        <div className="border-b border-paper/10 p-6 sm:border-b-0 sm:border-r">
+          <p className="text-[11px] font-medium text-paper/45">Abonnements actifs</p>
+          <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
+            {actives.length}
+          </p>
+        </div>
+        <div className={cn("p-6", totalAnnuel > 0 && "border-b border-paper/10 sm:border-b-0 sm:border-r")}>
+          <p className="text-[11px] font-medium text-paper/45">Charge mensuelle</p>
+          <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
+            {formatCurrency(totalMensuel)}
+          </p>
+        </div>
+        {totalAnnuel > 0 && (
+          <div className="p-6">
+            <p className="text-[11px] font-medium text-paper/45">Charge annuelle</p>
+            <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
+              {formatCurrency(totalAnnuel)}
+            </p>
+          </div>
+        )}
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-0">
@@ -136,26 +140,28 @@ export function SubscriptionsPage() {
               {actives.map((subscription) => (
                 <li
                   key={subscription.id}
-                  className="flex items-center justify-between gap-4 px-5 py-3"
+                  className="flex items-center justify-between gap-4 px-5 py-4"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-ink">{subscription.nom}</p>
-                    <p className="text-xs text-ink-soft">
-                      {subscription.categorie} · prochain paiement le{" "}
-                      <span className="font-mono tabular-nums">
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-soft">
+                      <span className="rounded-sm bg-sunken px-1.5 py-0.5 font-medium">
+                        {subscription.categorie}
+                      </span>
+                      <span className="whitespace-nowrap font-mono tabular-nums">
                         {formatDate(subscription.prochainPaiement)}
                       </span>
-                    </p>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
-                    <p className="text-right">
-                      <span className="font-mono text-[13px] font-medium tabular-nums text-ink">
+                    <div className="text-right">
+                      <span className="font-mono text-base font-semibold tabular-nums text-ink">
                         {formatCurrency(subscription.montant)}
                       </span>
-                      <span className="block text-right text-[11px] text-ink-faint">
+                      <span className="ml-1.5 text-[11px] text-ink-faint">
                         {subscription.periodicite === "mensuel" ? "/ mois" : "/ an"}
                       </span>
-                    </p>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
