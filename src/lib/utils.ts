@@ -1,7 +1,8 @@
 import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs);
+  return twMerge(clsx(inputs));
 }
 
 export function formatCurrency(value: number, currency = "CHF") {
@@ -13,9 +14,11 @@ export function formatCurrency(value: number, currency = "CHF") {
 }
 
 export function formatDate(date: string) {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return date;
   return new Intl.DateTimeFormat("fr-CH", {
     year: "numeric",
     month: "short",
     day: "2-digit",
-  }).format(new Date(date));
+  }).format(d);
 }

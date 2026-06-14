@@ -11,7 +11,6 @@ body {
   font-kerning: normal;
 }
 
-/* Figures everywhere align to the digit, even outside .font-mono */
 @layer base {
   h1,
   h2,
@@ -23,6 +22,29 @@ body {
   a:focus-visible {
     @apply outline-none ring-2 ring-accent ring-offset-1 ring-offset-paper;
   }
+}
+
+/* Safe area utility — usable in JSX as className="pb-safe" */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Modal entrance — replaces framer-motion, same cubic-bezier */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-animate {
+  animation: modal-in 0.18s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 .scrollbar-hidden::-webkit-scrollbar {

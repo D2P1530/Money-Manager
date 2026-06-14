@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowLeftRight, Repeat } from "lucide-react";
+import { Repeat, TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Amount } from "@/components/ui/amount";
-import { axisTick, chartColors, tooltipStyle } from "@/lib/chart";
+import { TransactionFormModal } from "@/components/ui/transaction-form-modal";
+import { axisTick, chartColors, formatAxisValue, formatMonthAxis, tooltipStyle } from "@/lib/chart";
 import { useFinanceData } from "@/data/use-finance-data";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
@@ -22,6 +23,9 @@ export function DashboardPage() {
     difference,
   } = useFinanceData();
   const [soldeBanque, setSoldeBanque] = useState(dashboard.soldeBanque.toString());
+  const [balanceError, setBalanceError] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddType, setQuickAddType] = useState<"depense" | "revenu">("depense");
 
   const depensesParCategorie = useMemo(() => {
     const totaux = new Map<string, number>();
@@ -52,9 +56,14 @@ export function DashboardPage() {
     .slice(0, 6);
 
   const handleBankBalance = () => {
-    const value = Number(soldeBanque);
+    const normalized = soldeBanque.replace(/'/g, "").replace(/\s/g, "").replace(/,/g, ".");
+    const value = Number(normalized);
     if (!Number.isNaN(value)) {
       setDashboard({ soldeBanque: value });
+      setSoldeBanque(value.toString());
+      setBalanceError(false);
+    } else {
+      setBalanceError(true);
     }
   };
 
@@ -82,7 +91,10 @@ export function DashboardPage() {
               inputMode="decimal"
               className="h-8 max-w-[10rem] font-mono text-[13px]"
               value={soldeBanque}
-              onChange={(event) => setSoldeBanque(event.target.value)}
+              onChange={(event) => {
+                setSoldeBanque(event.target.value);
+                if (balanceError) setBalanceError(false);
+              }}
               onBlur={handleBankBalance}
               onKeyDown={(event) => {
                 if (event.key === "Enter") (event.target as HTMLInputElement).blur();
@@ -90,6 +102,11 @@ export function DashboardPage() {
             />
             <span className="text-xs text-ink-faint">saisi manuellement</span>
           </div>
+          {balanceError && (
+            <p className="mt-1 text-xs text-negative">
+              Format invalide — utilisez 1234.56
+            </p>
+          )}
         </div>
 
         <div className="border-b border-line bg-surface p-6 sm:border-b-0 sm:border-r">
@@ -115,7 +132,7 @@ export function DashboardPage() {
 
         {/* Écart — focal point sombre : le signal le plus critique du journal */}
         <div className="bg-ink p-6">
-          <p className="text-[11px] font-medium text-paper/45">Écart</p>
+          <p className="text-[11px] font-medium text-paper/50">Écart</p>
           <p
             className={cn(
               "mt-1.5 font-mono text-4xl font-semibold tabular-nums tracking-tight",
@@ -126,7 +143,7 @@ export function DashboardPage() {
               ? formatCurrency(0)
               : `${ecartPositif ? "+" : "−"}${formatCurrency(Math.abs(difference))}`}
           </p>
-          <p className="mt-4 text-xs leading-relaxed text-paper/45">
+          <p className="mt-4 text-xs leading-relaxed text-paper/50">
             {ecartEquilibre
               ? "Aucun écart : le journal correspond au relevé bancaire."
               : "Un écart signale des opérations manquantes ou inconnues."}
@@ -148,8 +165,9 @@ export function DashboardPage() {
                   tick={axisTick}
                   axisLine={{ stroke: chartColors.line }}
                   tickLine={false}
+                  tickFormatter={formatMonthAxis}
                 />
-                <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} />
+                <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} tickFormatter={formatAxisValue} />
                 <Tooltip
                   formatter={(value) => [formatCurrency(Number(value)), "Net"]}
                   contentStyle={tooltipStyle}
@@ -194,7 +212,7 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="p-0 lg:col-span-2">
+        <Card className="overflow-x-hidden p-0 lg:col-span-2">
           <CardHeader className="border-b border-line px-5 pb-4 pt-5">
             <CardTitle>Transactions récentes</CardTitle>
             <CardDescription>Les six dernières opérations enregistrées.</CardDescription>
@@ -215,10 +233,15 @@ export function DashboardPage() {
                       index % 2 === 1 && "bg-sunken/50"
                     )}
                   >
-                    <td className="whitespace-nowrap py-2.5 pl-5 pr-3 font-mono text-xs tabular-nums text-ink-faint">
+                    <td className="hidden whitespace-nowrap py-2.5 pl-5 pr-3 font-mono text-xs tabular-nums text-ink-faint sm:table-cell">
                       {formatDate(transaction.date)}
                     </td>
-                    <td className="px-3 py-2.5 font-medium text-ink">{transaction.titre}</td>
+                    <td className="py-2.5 pl-5 pr-3 font-medium text-ink sm:pl-3">
+                      {transaction.titre}
+                      <span className="mt-0.5 block font-mono text-[11px] tabular-nums text-ink-faint sm:hidden">
+                        {formatDate(transaction.date)}
+                      </span>
+                    </td>
                     <td className="hidden px-3 py-2.5 text-[13px] text-ink-soft sm:table-cell">
                       {transaction.categorie}
                     </td>
@@ -242,16 +265,19 @@ export function DashboardPage() {
             <CardDescription>Ouvre le formulaire pré-rempli sur la bonne page.</CardDescription>
           </CardHeader>
           <div className="space-y-2">
-            <Button className="w-full" onClick={() => navigate("/transactions?ajouter=depense")}>
-              <ArrowLeftRight className="h-4 w-4" aria-hidden />
+            <Button
+              className="w-full"
+              onClick={() => { setQuickAddType("depense"); setQuickAddOpen(true); }}
+            >
+              <TrendingDown className="h-4 w-4" aria-hidden />
               Ajouter une dépense
             </Button>
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => navigate("/transactions?ajouter=revenu")}
+              onClick={() => { setQuickAddType("revenu"); setQuickAddOpen(true); }}
             >
-              <ArrowLeftRight className="h-4 w-4" aria-hidden />
+              <TrendingUp className="h-4 w-4" aria-hidden />
               Ajouter un revenu
             </Button>
             <Button
@@ -265,6 +291,12 @@ export function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <TransactionFormModal
+        open={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        defaultType={quickAddType}
+      />
     </div>
   );
 }

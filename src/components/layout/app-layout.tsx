@@ -33,7 +33,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[230px_1fr]">
-      <aside className="hidden border-r border-line bg-sunken lg:flex lg:flex-col">
+      <aside aria-label="Journal financier" className="hidden border-r border-line bg-sunken lg:flex lg:flex-col">
         <div className="sticky top-0 flex h-screen flex-col px-4 py-6">
           <div className="px-3">
             <p className="text-[15px] font-semibold tracking-tight text-ink">Journal financier</p>
@@ -77,14 +77,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <p className="hidden font-mono text-xs text-ink-faint sm:block">{today}</p>
           </div>
         </header>
-        <main className="flex-1 px-4 py-6 pb-24 lg:px-8 lg:pb-8">{children}</main>
+        <main className="flex-1 overflow-x-clip px-4 py-6 pb-28 lg:px-8 lg:pb-8">{children}</main>
       </div>
 
       <nav
-        aria-label="Navigation principale"
+        aria-label="Navigation mobile"
         className="fixed inset-x-0 bottom-0 z-sticky border-t border-line bg-surface lg:hidden"
       >
-        <ul className="flex">
+        <ul className="flex pb-safe">
           {navItems.map((item) => (
             <li key={item.to} className="flex-1">
               <NavLink

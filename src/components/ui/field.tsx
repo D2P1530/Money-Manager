@@ -25,7 +25,7 @@ export function Field({ label, error, hint, className, children }: FieldProps) {
         "aria-describedby": hasMessage ? messageId : undefined,
       })}
       {error ? (
-        <p id={messageId} className="text-xs text-negative">
+        <p id={messageId} role="alert" className="text-xs text-negative">
           {error}
         </p>
       ) : hint ? (

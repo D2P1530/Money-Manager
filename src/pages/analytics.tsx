@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import { axisTick, chartColors, tooltipStyle } from "@/lib/chart";
+import { axisTick, chartColors, formatAxisValue, formatMonthAxis, tooltipStyle } from "@/lib/chart";
 import { useFinanceData } from "@/data/use-finance-data";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -89,7 +89,7 @@ export function AnalyticsPage() {
         )}
       >
         <div className={cn("border-b border-paper/10 p-6 sm:border-b-0 sm:border-r")}>
-          <p className="text-[11px] font-medium text-paper/45">Catégorie la plus lourde</p>
+          <p className="text-[11px] font-medium text-paper/50">Catégorie la plus lourde</p>
           {topCategorie ? (
             <>
               <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
@@ -108,7 +108,7 @@ export function AnalyticsPage() {
         </div>
 
         <div className={cn("border-b border-paper/10 p-6 sm:border-b-0", tendance !== null && "sm:border-r")}>
-          <p className="text-[11px] font-medium text-paper/45">Net moyen mensuel</p>
+          <p className="text-[11px] font-medium text-paper/50">Net moyen mensuel</p>
           <p
             className={cn(
               "mt-1.5 font-mono text-4xl font-semibold tabular-nums",
@@ -127,7 +127,7 @@ export function AnalyticsPage() {
 
         {tendance !== null && (
           <div className="p-6">
-            <p className="text-[11px] font-medium text-paper/45">Tendance — dernier mois</p>
+            <p className="text-[11px] font-medium text-paper/50">Tendance — dernier mois</p>
             <p
               className={cn(
                 "mt-1.5 font-mono text-4xl font-semibold tabular-nums",
@@ -164,46 +164,73 @@ export function AnalyticsPage() {
               <option value="tout">Tout</option>
             </Select>
           </div>
-          <div className="h-72">
+          <div>
             {seriesMensuelleFiltree.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-ink-soft">
+              <div className="flex h-72 items-center justify-center text-sm text-ink-soft">
                 Aucune donnée à afficher.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={seriesMensuelleFiltree} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-                  <XAxis
-                    dataKey="mois"
-                    tick={axisTick}
-                    axisLine={{ stroke: chartColors.line }}
-                    tickLine={false}
-                  />
-                  <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} />
-                  <Tooltip
-                    formatter={(value, name) => [
-                      formatCurrency(Number(value)),
-                      name === "revenu" ? "Revenus" : "Dépenses",
-                    ]}
-                    contentStyle={tooltipStyle}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenu"
-                    stroke={chartColors.positive}
-                    strokeWidth={2}
-                    fill={chartColors.positiveSoft}
-                    dot={{ r: 4, strokeWidth: 0, fill: chartColors.positive }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="depense"
-                    stroke={chartColors.negative}
-                    strokeWidth={2}
-                    fill={chartColors.negativeSoft}
-                    dot={{ r: 4, strokeWidth: 0, fill: chartColors.negative }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <>
+                <div
+                  className="h-72"
+                  role="img"
+                  aria-label="Graphique des flux mensuels : revenus (trait plein) et dépenses (trait pointillé) par mois"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={seriesMensuelleFiltree} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+                      <XAxis
+                        dataKey="mois"
+                        tick={axisTick}
+                        axisLine={{ stroke: chartColors.line }}
+                        tickLine={false}
+                        tickFormatter={formatMonthAxis}
+                      />
+                      <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} tickFormatter={formatAxisValue} />
+                      <Tooltip
+                        formatter={(value, name) => [
+                          formatCurrency(Number(value)),
+                          name === "revenu" ? "Revenus" : "Dépenses",
+                        ]}
+                        contentStyle={tooltipStyle}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenu"
+                        stroke={chartColors.positive}
+                        strokeWidth={2}
+                        fill={chartColors.positiveSoft}
+                        dot={{ r: 4, strokeWidth: 0, fill: chartColors.positive }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="depense"
+                        stroke={chartColors.negative}
+                        strokeWidth={2}
+                        strokeDasharray="5 3"
+                        fill={chartColors.negativeSoft}
+                        dot={{ r: 3, strokeWidth: 2, stroke: chartColors.negative, fill: "#fff" }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div
+                  className="mt-3 flex items-center gap-5 font-mono text-[11px] text-ink-soft"
+                  aria-hidden
+                >
+                  <span className="flex items-center gap-2">
+                    <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
+                      <line x1="0" y1="4" x2="16" y2="4" stroke={chartColors.positive} strokeWidth="2" />
+                    </svg>
+                    Revenus
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
+                      <line x1="0" y1="4" x2="16" y2="4" stroke={chartColors.negative} strokeWidth="2" strokeDasharray="4 2" />
+                    </svg>
+                    Dépenses
+                  </span>
+                </div>
+              </>
             )}
           </div>
         </Card>

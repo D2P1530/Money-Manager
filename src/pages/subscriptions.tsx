@@ -175,7 +175,7 @@ export function SubscriptionsPage() {
           )}
         >
           <div className="border-b border-paper/10 p-6 sm:border-b-0 sm:border-r">
-            <p className="text-[11px] font-medium text-paper/45">Abonnements actifs</p>
+            <p className="text-[11px] font-medium text-paper/50">Abonnements actifs</p>
             <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
               {actives.length}
             </p>
@@ -186,14 +186,14 @@ export function SubscriptionsPage() {
               totalAnnuel > 0 && "border-b border-paper/10 sm:border-b-0 sm:border-r"
             )}
           >
-            <p className="text-[11px] font-medium text-paper/45">Charge mensuelle</p>
+            <p className="text-[11px] font-medium text-paper/50">Charge mensuelle</p>
             <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
               {formatCurrency(totalMensuel)}
             </p>
           </div>
           {totalAnnuel > 0 && (
             <div className="p-6">
-              <p className="text-[11px] font-medium text-paper/45">Charge annuelle</p>
+              <p className="text-[11px] font-medium text-paper/50">Charge annuelle</p>
               <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
                 {formatCurrency(totalAnnuel)}
               </p>
@@ -202,7 +202,7 @@ export function SubscriptionsPage() {
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="p-0">
+          <Card className="overflow-hidden p-0">
             <CardHeader className="border-b border-line px-5 pb-4 pt-5">
               <CardTitle>Actifs</CardTitle>
               <CardDescription>Prélevés à chaque échéance.</CardDescription>
@@ -241,6 +241,7 @@ export function SubscriptionsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        aria-pressed={subscription.actif}
                         onClick={() => toggleSubscription(subscription.id)}
                       >
                         Suspendre
@@ -252,7 +253,7 @@ export function SubscriptionsPage() {
             )}
           </Card>
 
-          <Card className="p-0">
+          <Card className="overflow-hidden p-0">
             <CardHeader className="border-b border-line px-5 pb-4 pt-5">
               <CardTitle>Suspendus</CardTitle>
               <CardDescription>Conservés pour mémoire, sans dépense générée.</CardDescription>
@@ -374,7 +375,7 @@ export function SubscriptionsPage() {
           </div>
         )}
 
-        <Card className="p-0">
+        <Card className="overflow-hidden p-0">
           {recurringPayments.length === 0 ? (
             <div className="px-5 py-12 text-center">
               <p className="text-sm text-ink-soft">Aucun paiement récurrent enregistré.</p>
@@ -424,8 +425,9 @@ export function SubscriptionsPage() {
                       </span>
                     </div>
                     <button
+                      type="button"
                       aria-label={`Supprimer ${payment.nom}`}
-                      className="rounded p-1.5 text-ink-faint transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="flex h-11 w-11 items-center justify-center rounded text-ink-faint transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       onClick={() => setDeleteRecurringTarget(payment)}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
@@ -447,10 +449,20 @@ export function SubscriptionsPage() {
         title="Supprimer le paiement récurrent"
       >
         <p className="text-[13px] text-ink-soft">
-          Supprimer{" "}
-          <span className="font-medium text-ink">{deleteRecurringTarget?.nom}</span>
-          {" "}? Cette opération est irréversible.
+          Supprimer ce paiement récurrent ? Cette opération est irréversible.
         </p>
+        {deleteRecurringTarget && (
+          <div className="mt-3 rounded border border-line bg-sunken px-4 py-3 text-[13px]">
+            <p className="font-medium text-ink">{deleteRecurringTarget.nom}</p>
+            <p className="mt-0.5 font-mono tabular-nums text-ink-soft">
+              {formatCurrency(deleteRecurringTarget.montant)}
+              {" · "}
+              {deleteRecurringTarget.periodicite === "mensuel" ? "/ mois" : "/ an"}
+              {" · "}
+              {formatDate(deleteRecurringTarget.prochainPaiement)}
+            </p>
+          </div>
+        )}
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="outline" onClick={() => setDeleteRecurringTarget(null)}>
             Annuler

@@ -1,4 +1,16 @@
-/* Couleurs hex équivalentes aux tokens OKLCH (recharts ne lit pas les classes Tailwind). */
+/* Hex equivalents of OKLCH tokens — recharts can't read Tailwind classes. */
+
+export function formatMonthAxis(value: string): string {
+  const [year, month] = value.split("-");
+  if (!year || !month) return value;
+  const d = new Date(Number(year), Number(month) - 1, 1);
+  const mo = new Intl.DateTimeFormat("fr-CH", { month: "short" }).format(d);
+  return `${mo} ${String(year).slice(2)}`;
+}
+
+export function formatAxisValue(value: number): string {
+  return new Intl.NumberFormat("fr-CH", { maximumFractionDigits: 0 }).format(value);
+}
 export const chartColors = {
   ink: "#1a1d29",
   inkFaint: "#6a6f80",

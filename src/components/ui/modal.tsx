@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import { motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 
 export function Modal({
@@ -16,19 +15,55 @@ export function Modal({
 }) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (!open) return;
+
+    const triggerEl = document.activeElement as HTMLElement | null;
+
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const panel = panelRef.current;
+      if (!panel) return;
+
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey) {
+        if (active === first || active === panel) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last || active === panel) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
+
     document.addEventListener("keydown", handleKey);
     document.body.style.overflow = "hidden";
     panelRef.current?.focus();
+
     return () => {
       document.removeEventListener("keydown", handleKey);
       document.body.style.overflow = "";
+      triggerEl?.focus();
     };
   }, [open, onClose]);
 
@@ -41,31 +76,28 @@ export function Modal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <motion.div
+      <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        initial={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.985, y: 4 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
-        className="flex w-full max-w-md flex-col rounded-md border border-line bg-surface shadow-xl shadow-ink/10 focus:outline-none max-h-[80vh]"
+        className="modal-animate flex w-full max-w-md flex-col rounded-md border border-line bg-surface shadow-xl shadow-ink/10 focus:outline-none max-h-[80vh]"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3.5">
-          <h2 id={titleId} className="text-[15px] font-semibold tracking-tight text-ink">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+          <h2 id={titleId} className="min-w-0 truncate text-[15px] font-semibold tracking-tight text-ink">
             {title}
           </h2>
           <button
             onClick={onClose}
             aria-label="Fermer"
-            className="rounded p-1 text-ink-soft transition-colors duration-150 hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="shrink-0 rounded p-1 text-ink-soft transition-colors duration-150 hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-4">{children}</div>
-      </motion.div>
+      </div>
     </div>,
     document.body
   );

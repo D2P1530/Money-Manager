@@ -12,13 +12,20 @@ export function SettingsPage() {
   const [soldeInitial, setSoldeInitial] = useState(settings.soldeInitial.toString());
   const [devise, setDevise] = useState(settings.devise);
   const [enregistre, setEnregistre] = useState(false);
+  const [soldeError, setSoldeError] = useState(false);
   const timeoutRef = useRef<number>();
 
   useEffect(() => () => window.clearTimeout(timeoutRef.current), []);
 
   const handleSave = () => {
-    const valeur = Number(soldeInitial);
-    if (Number.isNaN(valeur)) return;
+    const normalized = soldeInitial.replace(/'/g, "").replace(/\s/g, "").replace(/,/g, ".");
+    const valeur = Number(normalized);
+    if (Number.isNaN(valeur)) {
+      setSoldeError(true);
+      return;
+    }
+    setSoldeError(false);
+    setSoldeInitial(valeur.toString());
     setSettings({ soldeInitial: valeur, devise });
     setEnregistre(true);
     window.clearTimeout(timeoutRef.current);
@@ -28,8 +35,7 @@ export function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <header className="mb-8 border-b border-line pb-6">
-        <h1 className="text-[22px] font-semibold tracking-tight text-ink">Paramètres</h1>
-        <p className="mt-1 text-[13px] text-ink-soft">
+        <p className="text-[13px] text-ink-soft">
           Journal financier privé — configuration globale
         </p>
       </header>
@@ -51,14 +57,17 @@ export function SettingsPage() {
         </div>
 
         <div className="grid gap-4 p-5 sm:grid-cols-2">
-          <Field label="Solde initial">
+          <Field label="Solde initial" error={soldeError ? "Format invalide — utilisez 1234.56" : undefined}>
             {(fieldProps) => (
               <Input
                 {...fieldProps}
                 inputMode="decimal"
                 className="font-mono"
                 value={soldeInitial}
-                onChange={(event) => setSoldeInitial(event.target.value)}
+                onChange={(event) => {
+                  setSoldeInitial(event.target.value);
+                  if (soldeError) setSoldeError(false);
+                }}
               />
             )}
           </Field>
@@ -79,14 +88,19 @@ export function SettingsPage() {
 
         <div className="flex items-center gap-3 rounded-b-md border-t border-line bg-sunken px-5 py-3.5">
           <Button onClick={handleSave}>Enregistrer</Button>
+          {/* Visual fade — aria-hidden so AT ignores the opacity trick */}
           <span
-            role="status"
+            aria-hidden
             className={`flex items-center gap-1.5 text-[13px] text-positive transition-opacity duration-200 ease-out-quart ${
               enregistre ? "opacity-100" : "opacity-0"
             }`}
           >
-            <Check className="h-4 w-4" aria-hidden />
+            <Check className="h-4 w-4" />
             Modifications enregistrées
+          </span>
+          {/* Live region: content changes trigger the screen-reader announcement */}
+          <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+            {enregistre ? "Modifications enregistrées" : ""}
           </span>
         </div>
       </div>
