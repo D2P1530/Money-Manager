@@ -1,4 +1,4 @@
-import type { DashboardState, Settings, Subscription, Transaction } from "./types";
+import type { DashboardState, RecurringPayment, Settings, Subscription, Transaction } from "./types";
 
 export const categories = [
   "Alimentation",
@@ -86,6 +86,36 @@ export const demoSubscriptions: Subscription[] = [
     periodicite: "annuel",
     prochainPaiement: "2025-01-15",
     actif: false,
+  },
+];
+
+export const demoRecurringPayments: RecurringPayment[] = [
+  {
+    id: "r1",
+    nom: "Salaire",
+    categorie: "Autres",
+    montant: 4200,
+    type: "revenu",
+    periodicite: "mensuel",
+    prochainPaiement: "2026-07-05",
+  },
+  {
+    id: "r2",
+    nom: "Loyer",
+    categorie: "Factures",
+    montant: 1250,
+    type: "depense",
+    periodicite: "mensuel",
+    prochainPaiement: "2026-07-01",
+  },
+  {
+    id: "r3",
+    nom: "Bonus annuel",
+    categorie: "Autres",
+    montant: 3000,
+    type: "revenu",
+    periodicite: "annuel",
+    prochainPaiement: "2026-12-20",
   },
 ];
 

@@ -8,6 +8,7 @@ export type Transaction = {
   date: string;
   type: TransactionType;
   compte: string;
+  description?: string;
 };
 
 export type Subscription = {
@@ -18,6 +19,16 @@ export type Subscription = {
   periodicite: "mensuel" | "annuel";
   prochainPaiement: string;
   actif: boolean;
+};
+
+export type RecurringPayment = {
+  id: string;
+  nom: string;
+  categorie: string;
+  montant: number;
+  type: TransactionType;
+  periodicite: "mensuel" | "annuel";
+  prochainPaiement: string;
 };
 
 export type Settings = {

@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Tableau de bord", to: "/dashboard", icon: LayoutDashboard },
   { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
-  { label: "Abonnements", to: "/subscriptions", icon: Repeat },
+  { label: "Paiements récurrents", to: "/subscriptions", icon: Repeat },
   { label: "Analyses", to: "/analytics", icon: ChartLine },
   { label: "Paramètres", to: "/settings", icon: Settings },
 ];
@@ -19,7 +19,7 @@ const navItems = [
 const shortLabels: Record<string, string> = {
   "/dashboard": "Tableau",
   "/transactions": "Transactions",
-  "/subscriptions": "Abonnements",
+  "/subscriptions": "Récurrents",
   "/analytics": "Analyses",
   "/settings": "Paramètres",
 };

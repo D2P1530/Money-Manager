@@ -50,9 +50,9 @@ export function Modal({
         initial={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.985, y: 4 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
-        className="w-full max-w-md rounded-md border border-line bg-surface shadow-xl shadow-ink/10 focus:outline-none"
+        className="flex w-full max-w-md flex-col rounded-md border border-line bg-surface shadow-xl shadow-ink/10 focus:outline-none max-h-[80vh]"
       >
-        <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3.5">
           <h2 id={titleId} className="text-[15px] font-semibold tracking-tight text-ink">
             {title}
           </h2>
@@ -64,7 +64,7 @@ export function Modal({
             <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className="overflow-y-auto px-5 py-4">{children}</div>
       </motion.div>
     </div>,
     document.body

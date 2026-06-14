@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -8,12 +8,16 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import { axisTick, chartColors, tooltipStyle } from "@/lib/chart";
 import { useFinanceData } from "@/data/use-finance-data";
 import { cn, formatCurrency } from "@/lib/utils";
 
+type PeriodeFlux = "6" | "12" | "annee" | "tout";
+
 export function AnalyticsPage() {
-  const { transactions, subscriptions } = useFinanceData();
+  const { transactions } = useFinanceData();
+  const [periodeFlux, setPeriodeFlux] = useState<PeriodeFlux>("12");
 
   const seriesMensuelle = useMemo(() => {
     const mois = new Map<string, { revenu: number; depense: number }>();
@@ -49,110 +53,42 @@ export function AnalyticsPage() {
   );
   const topCategorie = depensesParCategorie[0];
 
-  const abonnementsActifs = useMemo(() => subscriptions.filter((s) => s.actif), [subscriptions]);
-  const chargeMensuelle = useMemo(
-    () =>
-      abonnementsActifs
-        .filter((s) => s.periodicite === "mensuel")
-        .reduce((acc, s) => acc + s.montant, 0),
-    [abonnementsActifs]
-  );
-
   const netMoyen = useMemo(() => {
     if (seriesMensuelle.length === 0) return 0;
     const total = seriesMensuelle.reduce((acc, m) => acc + m.revenu - m.depense, 0);
     return total / seriesMensuelle.length;
   }, [seriesMensuelle]);
 
+  const seriesMensuelleFiltree = useMemo(() => {
+    if (periodeFlux === "tout") return seriesMensuelle;
+    if (periodeFlux === "annee") {
+      const annee = new Date().getFullYear().toString();
+      return seriesMensuelle.filter((m) => m.mois.startsWith(annee));
+    }
+    return seriesMensuelle.slice(-Number(periodeFlux));
+  }, [seriesMensuelle, periodeFlux]);
+
+  const tendance = useMemo(() => {
+    if (seriesMensuelle.length < 2) return null;
+    const last = seriesMensuelle[seriesMensuelle.length - 1];
+    const prev = seriesMensuelle[seriesMensuelle.length - 2];
+    const lastNet = last.revenu - last.depense;
+    const prevNet = prev.revenu - prev.depense;
+    if (prevNet === 0) return null;
+    return Math.round(((lastNet - prevNet) / Math.abs(prevNet)) * 100);
+  }, [seriesMensuelle]);
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Flux mensuels</CardTitle>
-            <CardDescription>Revenus et dépenses sur la période.</CardDescription>
-          </CardHeader>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={seriesMensuelle} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-                <XAxis
-                  dataKey="mois"
-                  tick={axisTick}
-                  axisLine={{ stroke: chartColors.line }}
-                  tickLine={false}
-                />
-                <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} />
-                <Tooltip
-                  formatter={(value, name) => [
-                    formatCurrency(Number(value)),
-                    name === "revenu" ? "Revenus" : "Dépenses",
-                  ]}
-                  contentStyle={tooltipStyle}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="revenu"
-                  stroke={chartColors.positive}
-                  strokeWidth={2}
-                  fill={chartColors.positiveSoft}
-                  dot={{ r: 4, strokeWidth: 0, fill: chartColors.positive }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="depense"
-                  stroke={chartColors.negative}
-                  strokeWidth={2}
-                  fill={chartColors.negativeSoft}
-                  dot={{ r: 4, strokeWidth: 0, fill: chartColors.negative }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Dépenses par catégorie</CardTitle>
-            <CardDescription>Classement sur la période complète.</CardDescription>
-          </CardHeader>
-          {depensesParCategorie.length === 0 ? (
-            <p className="text-sm text-ink-soft">Aucune dépense enregistrée.</p>
-          ) : (
-            <ol className="space-y-4">
-              {depensesParCategorie.map((cat) => (
-                <li key={cat.categorie}>
-                  <div className="flex items-baseline justify-between gap-3 text-[13px]">
-                    <span className="font-medium text-ink">{cat.categorie}</span>
-                    <div className="flex items-baseline gap-2 shrink-0">
-                      <span className="font-mono tabular-nums text-ink">
-                        {formatCurrency(cat.total)}
-                      </span>
-                      {totalDepenses > 0 && (
-                        <span className="w-8 text-right text-[11px] text-ink-faint">
-                          {Math.round((cat.total / totalDepenses) * 100)} %
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-1.5 h-2 rounded-full bg-sunken">
-                    <div
-                      className="h-2 rounded-full bg-accent"
-                      style={{
-                        width: `${depensesParCategorie[0]?.total ? (cat.total / depensesParCategorie[0].total) * 100 : 0}%`,
-                      }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
-      </div>
-
+      {/* Orientation — top summary, read before the charts */}
       <section
-        aria-label="Lecture rapide"
-        className="grid overflow-hidden rounded-lg border border-line bg-ink sm:grid-cols-3"
+        aria-label="Récapitulatif analytique"
+        className={cn(
+          "grid overflow-hidden rounded-lg border border-line bg-ink",
+          tendance !== null ? "sm:grid-cols-3" : "sm:grid-cols-2"
+        )}
       >
-        <div className="border-b border-paper/10 p-6 sm:border-b-0 sm:border-r">
+        <div className={cn("border-b border-paper/10 p-6 sm:border-b-0 sm:border-r")}>
           <p className="text-[11px] font-medium text-paper/45">Catégorie la plus lourde</p>
           {topCategorie ? (
             <>
@@ -170,16 +106,8 @@ export function AnalyticsPage() {
             <p className="mt-1.5 text-sm text-paper/50">Aucune dépense enregistrée.</p>
           )}
         </div>
-        <div className="border-b border-paper/10 p-6 sm:border-b-0 sm:border-r">
-          <p className="text-[11px] font-medium text-paper/45">Abonnements actifs</p>
-          <p className="mt-1.5 font-mono text-4xl font-semibold tabular-nums text-paper">
-            {abonnementsActifs.length}
-          </p>
-          <p className="mt-1 text-xs text-paper/50">
-            {formatCurrency(chargeMensuelle)} de charge mensuelle
-          </p>
-        </div>
-        <div className="p-6">
+
+        <div className={cn("border-b border-paper/10 p-6 sm:border-b-0", tendance !== null && "sm:border-r")}>
           <p className="text-[11px] font-medium text-paper/45">Net moyen mensuel</p>
           <p
             className={cn(
@@ -196,7 +124,128 @@ export function AnalyticsPage() {
             {seriesMensuelle.length > 1 ? "s" : ""}
           </p>
         </div>
+
+        {tendance !== null && (
+          <div className="p-6">
+            <p className="text-[11px] font-medium text-paper/45">Tendance — dernier mois</p>
+            <p
+              className={cn(
+                "mt-1.5 font-mono text-4xl font-semibold tabular-nums",
+                tendance >= 0 ? "text-positive-soft" : "text-negative-soft"
+              )}
+            >
+              {tendance > 0 ? "+" : ""}{tendance} %
+            </p>
+            <p className="mt-1 text-xs text-paper/50">
+              {tendance >= 0 ? "Hausse" : "Baisse"} du net vs mois précédent
+            </p>
+          </div>
+        )}
       </section>
+
+      {/* Charts — main analytical content */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="space-y-0.5">
+              <CardTitle>Flux mensuels</CardTitle>
+              <CardDescription>Revenus et dépenses sur la période sélectionnée.</CardDescription>
+            </div>
+            <label htmlFor="periode-flux" className="sr-only">Période du graphique</label>
+            <Select
+              id="periode-flux"
+              className="w-36 shrink-0"
+              value={periodeFlux}
+              onChange={(e) => setPeriodeFlux(e.target.value as PeriodeFlux)}
+            >
+              <option value="6">6 mois</option>
+              <option value="12">12 mois</option>
+              <option value="annee">Cette année</option>
+              <option value="tout">Tout</option>
+            </Select>
+          </div>
+          <div className="h-72">
+            {seriesMensuelleFiltree.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-ink-soft">
+                Aucune donnée à afficher.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={seriesMensuelleFiltree} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+                  <XAxis
+                    dataKey="mois"
+                    tick={axisTick}
+                    axisLine={{ stroke: chartColors.line }}
+                    tickLine={false}
+                  />
+                  <YAxis tick={axisTick} axisLine={false} tickLine={false} width={56} />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      formatCurrency(Number(value)),
+                      name === "revenu" ? "Revenus" : "Dépenses",
+                    ]}
+                    contentStyle={tooltipStyle}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenu"
+                    stroke={chartColors.positive}
+                    strokeWidth={2}
+                    fill={chartColors.positiveSoft}
+                    dot={{ r: 4, strokeWidth: 0, fill: chartColors.positive }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="depense"
+                    stroke={chartColors.negative}
+                    strokeWidth={2}
+                    fill={chartColors.negativeSoft}
+                    dot={{ r: 4, strokeWidth: 0, fill: chartColors.negative }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Dépenses par catégorie</CardTitle>
+            <CardDescription>Classement sur la période complète.</CardDescription>
+          </CardHeader>
+          {depensesParCategorie.length === 0 ? (
+            <p className="text-sm text-ink-soft">Aucune dépense enregistrée.</p>
+          ) : (
+            <ol className="space-y-4">
+              {depensesParCategorie.map((cat) => (
+                <li key={cat.categorie}>
+                  <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                    <span className="font-medium text-ink">{cat.categorie}</span>
+                    <div className="flex shrink-0 items-baseline gap-2">
+                      <span className="font-mono tabular-nums text-ink">
+                        {formatCurrency(cat.total)}
+                      </span>
+                      {totalDepenses > 0 && (
+                        <span className="w-8 text-right text-[11px] text-ink-faint">
+                          {Math.round((cat.total / totalDepenses) * 100)} %
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-1.5 h-1.5 rounded-full bg-sunken">
+                    <div
+                      className="h-1.5 rounded-full bg-accent"
+                      style={{
+                        width: `${depensesParCategorie[0]?.total ? (cat.total / depensesParCategorie[0].total) * 100 : 0}%`,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

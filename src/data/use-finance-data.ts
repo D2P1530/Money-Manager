@@ -1,10 +1,11 @@
 import { useMemo } from "react";
-import { demoDashboard, demoSettings, demoSubscriptions, demoTransactions } from "@/data/demo";
-import type { DashboardState, Settings, Subscription, Transaction } from "@/data/types";
+import { demoDashboard, demoRecurringPayments, demoSettings, demoSubscriptions, demoTransactions } from "@/data/demo";
+import type { DashboardState, RecurringPayment, Settings, Subscription, Transaction } from "@/data/types";
 import { useLocalStorage } from "@/lib/storage";
 
 const TRANSACTIONS_KEY = "mm-transactions";
 const SUBSCRIPTIONS_KEY = "mm-subscriptions";
+const RECURRING_PAYMENTS_KEY = "mm-recurring-payments";
 const SETTINGS_KEY = "mm-settings";
 const DASHBOARD_KEY = "mm-dashboard";
 
@@ -16,6 +17,10 @@ export function useFinanceData() {
   const [subscriptions, setSubscriptions] = useLocalStorage<Subscription[]>(
     SUBSCRIPTIONS_KEY,
     demoSubscriptions
+  );
+  const [recurringPayments, setRecurringPayments] = useLocalStorage<RecurringPayment[]>(
+    RECURRING_PAYMENTS_KEY,
+    demoRecurringPayments
   );
   const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, demoSettings);
   const [dashboard, setDashboard] = useLocalStorage<DashboardState>(
@@ -40,6 +45,8 @@ export function useFinanceData() {
     setTransactions,
     subscriptions,
     setSubscriptions,
+    recurringPayments,
+    setRecurringPayments,
     settings,
     setSettings,
     dashboard,
