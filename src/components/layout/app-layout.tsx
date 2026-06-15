@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   ArrowLeftRight,
@@ -7,6 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { prefetchAllRoutes, prefetchRoute } from "@/lib/prefetch";
 
 const navItems = [
   { label: "Tableau de bord", to: "/dashboard", icon: LayoutDashboard },
@@ -27,6 +29,15 @@ const shortLabels: Record<string, string> = {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
+  useEffect(() => {
+    const id = requestIdleCallback
+      ? requestIdleCallback(prefetchAllRoutes)
+      : setTimeout(prefetchAllRoutes, 200);
+    return () => {
+      requestIdleCallback ? cancelIdleCallback(id as number) : clearTimeout(id);
+    };
+  }, []);
+
   const pageTitle =
     navItems.find((item) => location.pathname.startsWith(item.to))?.label ?? "Journal";
   const today = new Intl.DateTimeFormat("fr-CH", { dateStyle: "long" }).format(new Date());
@@ -45,6 +56,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <li key={item.to}>
                   <NavLink
                     to={item.to}
+                    onMouseEnter={() => prefetchRoute(item.to)}
+                    onFocus={() => prefetchRoute(item.to)}
                     className={({ isActive }) =>
                       cn(
                         "flex items-center gap-2.5 rounded border px-3 py-2 text-sm transition-colors duration-150",
@@ -89,6 +102,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <li key={item.to} className="flex-1">
               <NavLink
                 to={item.to}
+                onMouseEnter={() => prefetchRoute(item.to)}
+                onFocus={() => prefetchRoute(item.to)}
                 className={({ isActive }) =>
                   cn(
                     "flex flex-col items-center gap-1 px-1 pb-2.5 pt-2 text-[10px] font-medium transition-colors duration-150",

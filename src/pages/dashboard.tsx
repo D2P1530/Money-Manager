@@ -188,7 +188,7 @@ export function DashboardPage() {
             <p className="text-sm text-ink-soft">Aucune dépense enregistrée pour l'instant.</p>
           ) : (
             <ol className="space-y-3">
-              {depensesParCategorie.slice(0, 6).map((categorie) => (
+              {depensesParCategorie.slice(0, 6).map((categorie, index) => (
                 <li key={categorie.name}>
                   <div className="flex items-baseline justify-between gap-3 text-[13px]">
                     <span className="text-ink">{categorie.name}</span>
@@ -198,10 +198,11 @@ export function DashboardPage() {
                   </div>
                   <div className="mt-1.5 h-1.5 rounded-full bg-sunken">
                     <div
-                      className="h-1.5 rounded-full bg-accent"
+                      className="bar-animate h-1.5 rounded-full bg-accent"
                       style={{
                         width: `${maxCategorie ? (categorie.value / maxCategorie) * 100 : 0}%`,
-                      }}
+                        "--bar-i": index,
+                      } as React.CSSProperties}
                     />
                   </div>
                 </li>

@@ -31,20 +31,54 @@ body {
   }
 }
 
-/* Modal entrance — replaces framer-motion, same cubic-bezier */
-@keyframes modal-in {
-  from {
-    opacity: 0;
-    transform: scale(0.985) translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
+/* ── Motion ──────────────────────────────────────────────────────────── */
 
+/* Modal panel */
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.985) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)     translateY(0);   }
+}
 .modal-animate {
   animation: modal-in 0.18s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Modal backdrop */
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.backdrop-animate {
+  animation: backdrop-in 150ms ease-out both;
+}
+
+/* Category bar reveal — clip-path left→right, staggered */
+@keyframes bar-in {
+  from { clip-path: inset(0 100% 0 0 round 9999px); }
+  to   { clip-path: inset(0 0%   0 0 round 9999px); }
+}
+.bar-animate {
+  animation: bar-in 500ms cubic-bezier(0.25, 1, 0.5, 1) both;
+  animation-delay: calc(var(--bar-i, 0) * 50ms);
+}
+
+/* Filter panel — mobile grid-reveal (sm+ overrides to display:contents) */
+.panel-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.panel-grid.open {
+  grid-template-rows: 1fr;
+}
+.panel-grid-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+@media (min-width: 640px) {
+  .panel-grid,
+  .panel-grid-inner {
+    display: contents;
+  }
 }
 
 .scrollbar-hidden::-webkit-scrollbar {

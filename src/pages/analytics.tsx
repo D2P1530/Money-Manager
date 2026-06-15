@@ -244,7 +244,7 @@ export function AnalyticsPage() {
             <p className="text-sm text-ink-soft">Aucune dépense enregistrée.</p>
           ) : (
             <ol className="space-y-4">
-              {depensesParCategorie.map((cat) => (
+              {depensesParCategorie.map((cat, index) => (
                 <li key={cat.categorie}>
                   <div className="flex items-baseline justify-between gap-3 text-[13px]">
                     <span className="font-medium text-ink">{cat.categorie}</span>
@@ -261,10 +261,11 @@ export function AnalyticsPage() {
                   </div>
                   <div className="mt-1.5 h-1.5 rounded-full bg-sunken">
                     <div
-                      className="h-1.5 rounded-full bg-accent"
+                      className="bar-animate h-1.5 rounded-full bg-accent"
                       style={{
                         width: `${depensesParCategorie[0]?.total ? (cat.total / depensesParCategorie[0].total) * 100 : 0}%`,
-                      }}
+                        "--bar-i": index,
+                      } as React.CSSProperties}
                     />
                   </div>
                 </li>

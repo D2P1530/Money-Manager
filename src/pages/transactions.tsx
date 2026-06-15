@@ -186,14 +186,12 @@ export function TransactionsPage() {
             </Button>
           </div>
 
-          {/* Filter fields: collapsible on mobile, always inline on sm+ */}
+          {/* Filter fields: animated slide on mobile, always inline on sm+ */}
           <div
             id="filter-panel"
-            className={cn(
-              "w-full sm:contents",
-              filtersOpen ? "flex flex-wrap gap-3" : "hidden"
-            )}
+            className={cn("panel-grid w-full", filtersOpen && "open")}
           >
+            <div className="panel-grid-inner flex flex-wrap gap-3 pb-0.5">
             <div className="w-full min-w-0 sm:w-36">
               <label
                 htmlFor="filtre-periode"
@@ -266,6 +264,7 @@ export function TransactionsPage() {
                 value={filters.max}
                 onChange={(event) => setFilters((prev) => ({ ...prev, max: event.target.value }))}
               />
+            </div>
             </div>
           </div>
 
