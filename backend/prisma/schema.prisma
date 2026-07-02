@@ -6,6 +6,8 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  moduleFormat = "commonjs"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -29,7 +31,6 @@ model Transaction {
   montant     Float
   date        String
   type        TransactionType
-  compte      String
   description String?
 }
 

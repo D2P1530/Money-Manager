@@ -1,4 +1,10 @@
-import type { DashboardState, RecurringPayment, Settings, Subscription, Transaction } from "./types";
+import type {
+  DashboardState,
+  RecurringPayment,
+  Settings,
+  Subscription,
+  Transaction,
+} from "./types";
 
 export const categories = [
   "Alimentation",
@@ -19,7 +25,6 @@ export const demoTransactions: Transaction[] = [
     montant: 124.5,
     date: "2024-08-12",
     type: "depense",
-    compte: "Carte principale",
   },
   {
     id: "t2",
@@ -28,7 +33,6 @@ export const demoTransactions: Transaction[] = [
     montant: 4200,
     date: "2024-08-05",
     type: "revenu",
-    compte: "Virement",
   },
   {
     id: "t3",
@@ -37,7 +41,6 @@ export const demoTransactions: Transaction[] = [
     montant: 85,
     date: "2024-08-03",
     type: "depense",
-    compte: "Carte transport",
   },
   {
     id: "t4",
@@ -46,7 +49,6 @@ export const demoTransactions: Transaction[] = [
     montant: 26,
     date: "2024-08-09",
     type: "depense",
-    compte: "Carte principale",
   },
   {
     id: "t5",
@@ -55,7 +57,6 @@ export const demoTransactions: Transaction[] = [
     montant: 180,
     date: "2024-08-07",
     type: "revenu",
-    compte: "Assurance",
   },
 ];
 

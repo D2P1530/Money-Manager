@@ -92,7 +92,6 @@ export function TransactionFormModal({
           montant: data.montant,
           date: data.date,
           type: data.type,
-          compte: "Carte principale",
           description: desc,
         },
         ...transactions,

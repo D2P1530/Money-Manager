@@ -7,7 +7,6 @@ export type Transaction = {
   montant: number;
   date: string;
   type: TransactionType;
-  compte: string;
   description?: string;
 };
 
