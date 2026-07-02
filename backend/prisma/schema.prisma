@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Periodicite {
+  mensuel
+  annuel
+}
+
+enum TransactionType {
+  depense
+  revenu
+}
+
+model Transaction {
+  id          String        @id @default(cuid())
+  titre       String
+  categorie   String
+  montant     Float
+  date        String
+  type        TransactionType
+  compte      String
+  description String?
+}
+
+model Subscription {
+  id               String      @id @default(cuid())
+  nom              String
+  categorie        String
+  montant          Float
+  periodicite      Periodicite
+  prochainPaiement String
+  actif            Boolean
+}
+
+model RecurringPayment {
+  id               String        @id @default(cuid())
+  nom              String
+  categorie        String
+  montant          Float
+  type             TransactionType
+  periodicite      Periodicite
+  prochainPaiement String
+}
+
+model Settings {
+  id           String @id @default(cuid())
+  soldeInitial Float
+  devise       String
+}
+
+model DashboardState {
+  id          String @id @default(cuid())
+  soldeBanque Float
+}
