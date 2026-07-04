@@ -11,13 +11,15 @@ export class SettingsService {
   }
 
   upsert(updateSettingDto: UpdateSettingDto) {
+    const soldeInitial = updateSettingDto?.soldeInitial ?? 0;
+    const devise = updateSettingDto?.devise ?? 'CHF';
     return this.prisma.settings.upsert({
       where: { id: 'singleton' },
-      update: updateSettingDto,
+      update: { soldeInitial, devise },
       create: {
         id: 'singleton',
-        soldeInitial: updateSettingDto.soldeInitial ?? 0,
-        devise: updateSettingDto.devise ?? 'CHF',
+        soldeInitial,
+        devise,
       },
     });
   }
