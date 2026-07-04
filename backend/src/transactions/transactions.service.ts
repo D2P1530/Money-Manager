@@ -7,9 +7,9 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 export class TransactionsService {
   constructor(private prisma: PrismaService) {}
 
-  create(dto: CreateTransactionDto) {
+  create(createTransactionDto: CreateTransactionDto) {
     return this.prisma.transaction.create({
-      data: dto,
+      data: createTransactionDto,
     });
   }
 
@@ -25,10 +25,10 @@ export class TransactionsService {
     });
   }
 
-  update(id: string, dto: UpdateTransactionDto) {
+  update(id: string, updateTransactionDto: UpdateTransactionDto) {
     return this.prisma.transaction.update({
       where: { id },
-      data: dto,
+      data: updateTransactionDto,
     });
   }
 
