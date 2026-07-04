@@ -1,4 +1,5 @@
 export type TransactionType = "depense" | "revenu";
+export type Periodicite = "mensuel" | "annuel";
 
 export type Transaction = {
   id: string;
@@ -15,7 +16,7 @@ export type Subscription = {
   nom: string;
   categorie: string;
   montant: number;
-  periodicite: "mensuel" | "annuel";
+  periodicite: Periodicite;
   prochainPaiement: string;
   actif: boolean;
 };
@@ -26,7 +27,7 @@ export type RecurringPayment = {
   categorie: string;
   montant: number;
   type: TransactionType;
-  periodicite: "mensuel" | "annuel";
+  periodicite: Periodicite;
   prochainPaiement: string;
 };
 
