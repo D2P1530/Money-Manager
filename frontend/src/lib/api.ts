@@ -66,7 +66,8 @@ export const api = {
       }).then((r) => r.json()),
   },
   settings: {
-    get: () => fetch(`${BASE_URL}/settings`).then((r) => r.json()),
+    get: () =>
+      fetch(`${BASE_URL}/settings`).then((r) => (r.ok ? r.json() : null)),
     update: (data: Partial<Settings>) =>
       fetch(`${BASE_URL}/settings`, {
         method: "PATCH",
@@ -75,7 +76,8 @@ export const api = {
       }).then((r) => r.json()),
   },
   dashboard: {
-    get: () => fetch(`${BASE_URL}/dashboard`).then((r) => r.json()),
+    get: () =>
+      fetch(`${BASE_URL}/dashboard`).then((r) => (r.ok ? r.json() : null)),
     update: (soldeBanque: number) =>
       fetch(`${BASE_URL}/dashboard`, {
         method: "PATCH",

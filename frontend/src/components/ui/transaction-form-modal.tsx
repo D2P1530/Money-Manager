@@ -37,7 +37,7 @@ export function TransactionFormModal({
   editTarget = null,
   defaultType = "depense",
 }: Props) {
-  const { transactions, setTransactions } = useFinanceData();
+  const { addTransaction, updateTransaction } = useFinanceData();
 
   const {
     register,
@@ -68,34 +68,23 @@ export function TransactionFormModal({
   const onSubmit = (data: FormValues) => {
     const desc = data.description?.trim() || undefined;
     if (editTarget) {
-      setTransactions(
-        transactions.map((t) =>
-          t.id === editTarget.id
-            ? {
-                ...t,
-                titre: data.titre,
-                categorie: data.categorie,
-                montant: data.montant,
-                date: data.date,
-                type: data.type,
-                description: desc,
-              }
-            : t
-        )
-      );
+      updateTransaction(editTarget.id, {
+        titre: data.titre,
+        categorie: data.categorie,
+        montant: data.montant,
+        date: data.date,
+        type: data.type,
+        description: desc,
+      });
     } else {
-      setTransactions([
-        {
-          id: crypto.randomUUID(),
-          titre: data.titre,
-          categorie: data.categorie,
-          montant: data.montant,
-          date: data.date,
-          type: data.type,
-          description: desc,
-        },
-        ...transactions,
-      ]);
+      addTransaction({
+        titre: data.titre,
+        categorie: data.categorie,
+        montant: data.montant,
+        date: data.date,
+        type: data.type,
+        description: desc,
+      });
     }
     onClose();
   };

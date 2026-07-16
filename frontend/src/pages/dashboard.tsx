@@ -16,7 +16,7 @@ export function DashboardPage() {
   const {
     transactions,
     dashboard,
-    setDashboard,
+    updateDashboard,
     totalDepenses,
     totalRevenus,
     soldeAttendu,
@@ -59,7 +59,7 @@ export function DashboardPage() {
     const normalized = soldeBanque.replace(/'/g, "").replace(/\s/g, "").replace(/,/g, ".");
     const value = Number(normalized);
     if (!Number.isNaN(value)) {
-      setDashboard({ soldeBanque: value });
+      updateDashboard(value);
       setSoldeBanque(value.toString());
       setBalanceError(false);
     } else {

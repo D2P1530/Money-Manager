@@ -13,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { Amount } from "@/components/ui/amount";
 import { categories } from "@/data/demo";
 import { useFinanceData } from "@/data/use-finance-data";
-import type { RecurringPayment, Subscription } from "@/data/types";
+import type { RecurringPayment } from "@/data/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -39,8 +39,14 @@ type SubFormValues = z.infer<typeof subSchema>;
 type RecurringFormValues = z.infer<typeof recurringSchema>;
 
 export function SubscriptionsPage() {
-  const { subscriptions, setSubscriptions, recurringPayments, setRecurringPayments } =
-    useFinanceData();
+  const {
+    subscriptions,
+    addSubscription,
+    updateSubscription,
+    recurringPayments,
+    addRecurringPayment,
+    deleteRecurringPayment,
+  } = useFinanceData();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [subModalOpen, setSubModalOpen] = useState(false);
@@ -79,22 +85,22 @@ export function SubscriptionsPage() {
   );
 
   const onSubSubmit = (data: SubFormValues) => {
-    const nouvelle: Subscription = {
-      id: crypto.randomUUID(),
+    addSubscription({
       nom: data.nom,
       categorie: data.categorie,
       montant: data.montant,
       periodicite: data.periodicite,
       prochainPaiement: data.prochainPaiement,
       actif: true,
-    };
-    setSubscriptions([nouvelle, ...subscriptions]);
+    });
     subForm.reset({ periodicite: "mensuel" });
     setSubModalOpen(false);
   };
 
   const toggleSubscription = (id: string) => {
-    setSubscriptions(subscriptions.map((s) => (s.id === id ? { ...s, actif: !s.actif } : s)));
+    const subscription = subscriptions.find((s) => s.id === id);
+    if (!subscription) return;
+    updateSubscription(id, { actif: !subscription.actif });
   };
 
   // ── Recurring payments ─────────────────────────────────────────────────
@@ -124,23 +130,21 @@ export function SubscriptionsPage() {
   const hasAnnuel = recurringPayments.some((p) => p.periodicite === "annuel");
 
   const onRecurringSubmit = (data: RecurringFormValues) => {
-    const nouveau: RecurringPayment = {
-      id: crypto.randomUUID(),
+    addRecurringPayment({
       nom: data.nom,
       categorie: data.categorie,
       montant: data.montant,
       type: data.type,
       periodicite: data.periodicite,
       prochainPaiement: data.prochainPaiement,
-    };
-    setRecurringPayments([nouveau, ...recurringPayments]);
+    });
     recurringForm.reset({ type: "depense", periodicite: "mensuel", prochainPaiement: today() });
     setRecurringModalOpen(false);
   };
 
   const confirmDeleteRecurring = () => {
     if (!deleteRecurringTarget) return;
-    setRecurringPayments(recurringPayments.filter((p) => p.id !== deleteRecurringTarget.id));
+    deleteRecurringPayment(deleteRecurringTarget.id);
     setDeleteRecurringTarget(null);
   };
 

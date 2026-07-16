@@ -15,7 +15,7 @@ import type { Transaction } from "@/data/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 export function TransactionsPage() {
-  const { transactions, setTransactions } = useFinanceData();
+  const { transactions, deleteTransaction } = useFinanceData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [onglet, setOnglet] = useState<"toutes" | "depense" | "revenu">("toutes");
   const [modalOpen, setModalOpen] = useState(false);
@@ -45,7 +45,7 @@ export function TransactionsPage() {
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
-    setTransactions(transactions.filter((t) => t.id !== deleteTarget.id));
+    deleteTransaction(deleteTarget.id);
     setDeleteTarget(null);
   };
 

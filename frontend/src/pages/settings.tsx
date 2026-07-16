@@ -8,7 +8,7 @@ import { useFinanceData } from "@/data/use-finance-data";
 import { formatCurrency } from "@/lib/utils";
 
 export function SettingsPage() {
-  const { settings, setSettings, soldeAttendu } = useFinanceData();
+  const { settings, updateSettings, soldeAttendu } = useFinanceData();
   const [soldeInitial, setSoldeInitial] = useState(settings.soldeInitial.toString());
   const [devise, setDevise] = useState(settings.devise);
   const [enregistre, setEnregistre] = useState(false);
@@ -26,7 +26,7 @@ export function SettingsPage() {
     }
     setSoldeError(false);
     setSoldeInitial(valeur.toString());
-    setSettings({ soldeInitial: valeur, devise });
+    updateSettings({ soldeInitial: valeur, devise });
     setEnregistre(true);
     window.clearTimeout(timeoutRef.current);
     timeoutRef.current = window.setTimeout(() => setEnregistre(false), 2500);
