@@ -1,0 +1,9 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/prisma:/app/prisma
+    environment:
+      DATABASE_URL: file:./prisma/money-manager.db
