@@ -51,5 +51,6 @@ jobs:
 
       - name: Deploy backend
         run: |
-          docker compose pull || true
+          cd ~/projects/Money-Manager
+          git pull
           docker compose up -d --build
