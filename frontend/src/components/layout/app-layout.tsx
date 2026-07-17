@@ -34,7 +34,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       ? requestIdleCallback(prefetchAllRoutes)
       : setTimeout(prefetchAllRoutes, 200);
     return () => {
-      requestIdleCallback ? cancelIdleCallback(id as number) : clearTimeout(id);
+      typeof requestIdleCallback !== 'undefined' ? cancelIdleCallback(id as number) : clearTimeout(id);
     };
   }, []);
 

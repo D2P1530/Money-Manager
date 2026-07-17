@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import { categories } from "@/data/demo";
+import { categories } from "@/data/categories";
 import { useFinanceData } from "@/data/use-finance-data";
 import type { Transaction } from "@/data/types";
 

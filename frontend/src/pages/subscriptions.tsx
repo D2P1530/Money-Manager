@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/select";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { Amount } from "@/components/ui/amount";
-import { categories } from "@/data/demo";
+import { categories } from "@/data/categories"
 import { useFinanceData } from "@/data/use-finance-data";
 import type { RecurringPayment } from "@/data/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";

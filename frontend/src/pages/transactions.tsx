@@ -9,7 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import { Tabs } from "@/components/ui/tabs";
 import { Amount } from "@/components/ui/amount";
 import { TransactionFormModal } from "@/components/ui/transaction-form-modal";
-import { categories } from "@/data/demo";
+import { categories } from "@/data/categories";
 import { useFinanceData } from "@/data/use-finance-data";
 import type { Transaction } from "@/data/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
