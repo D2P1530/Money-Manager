@@ -32,7 +32,7 @@ jobs:
           docker run -d \
             --name money-manager-frontend \
             --restart unless-stopped \
-            -p 8080:80 \
+            -p 8081:80 \
             -v $(pwd)/frontend/dist:/usr/share/nginx/html:ro \
             nginx:alpine
 
