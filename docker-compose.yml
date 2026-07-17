@@ -8,3 +8,4 @@ services:
     environment:
       DATABASE_URL: file:./prisma/money-manager.db
       API_KEY: ${API_KEY}
+      FRONTEND_URL: ${FRONTEND_URL}
