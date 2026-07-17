@@ -7,3 +7,4 @@ services:
       - ./backend/prisma:/app/prisma
     environment:
       DATABASE_URL: file:./prisma/money-manager.db
+      API_KEY: ${API_KEY}

@@ -20,8 +20,10 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
         run: |
           echo "VITE_API_URL=$VITE_API_URL" > .env
+          echo "VITE_API_KEY=$VITE_API_KEY" >> .env
           npm install
           npm run build
 
