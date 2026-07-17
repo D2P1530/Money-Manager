@@ -1,0 +1,42 @@
+name: Deploy Money Manager
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: |
+          echo "VITE_API_URL=$VITE_API_URL" > .env
+          npm install
+          npm run build
+
+      - name: Deploy frontend
+        run: |
+          docker stop money-manager-frontend || true
+          docker rm money-manager-frontend || true
+          docker run -d \
+            --name money-manager-frontend \
+            --restart unless-stopped \
+            -p 8080:80 \
+            -v $(pwd)/frontend/dist:/usr/share/nginx/html:ro \
+            nginx:alpine
+
+      - name: Deploy backend
+        run: |
+          docker compose pull || true
+          docker compose up -d --build
