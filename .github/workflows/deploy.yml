@@ -29,6 +29,16 @@ jobs:
 
       - name: Deploy frontend
         run: |
+          cat > /tmp/nginx.conf << 'EOF'
+          server {
+            listen 80;
+            root /usr/share/nginx/html;
+            index index.html;
+            location / {
+              try_files $uri $uri/ /index.html;
+            }
+          }
+          EOF
           docker stop money-manager-frontend || true
           docker rm money-manager-frontend || true
           docker run -d \
@@ -36,6 +46,7 @@ jobs:
             --restart unless-stopped \
             -p 8888:80 \
             -v $(pwd)/frontend/dist:/usr/share/nginx/html:ro \
+            -v /tmp/nginx.conf:/etc/nginx/conf.d/default.conf:ro \
             nginx:alpine
 
       - name: Deploy backend
