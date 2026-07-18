@@ -10,6 +10,20 @@ import {
 import { cn } from "@/lib/utils";
 import { prefetchAllRoutes, prefetchRoute } from "@/lib/prefetch";
 
+const requestIdlePolyfill: typeof window.requestIdleCallback =
+  typeof window !== "undefined" && window.requestIdleCallback
+    ? window.requestIdleCallback.bind(window)
+    : (callback) =>
+        setTimeout(
+          () => callback({ didTimeout: false, timeRemaining: () => 0 }),
+          200
+        ) as unknown as number;
+
+const cancelIdlePolyfill: typeof window.cancelIdleCallback =
+  typeof window !== "undefined" && window.cancelIdleCallback
+    ? window.cancelIdleCallback.bind(window)
+    : (handle) => clearTimeout(handle);
+
 const navItems = [
   { label: "Tableau de bord", to: "/dashboard", icon: LayoutDashboard },
   { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
@@ -30,12 +44,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    const id = requestIdleCallback
-      ? requestIdleCallback(prefetchAllRoutes)
-      : setTimeout(prefetchAllRoutes, 200);
-    return () => {
-      typeof requestIdleCallback !== 'undefined' ? cancelIdleCallback(id as number) : clearTimeout(id);
-    };
+    const id = requestIdlePolyfill(prefetchAllRoutes);
+    return () => cancelIdlePolyfill(id);
   }, []);
 
   const pageTitle =
