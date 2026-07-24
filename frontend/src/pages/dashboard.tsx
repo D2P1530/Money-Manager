@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Repeat, TrendingDown, TrendingUp } from "lucide-react";
@@ -26,6 +26,11 @@ export function DashboardPage() {
   const [balanceError, setBalanceError] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddType, setQuickAddType] = useState<"depense" | "revenu">("depense");
+
+  // Resynchronise le champ quand le solde bancaire arrive depuis l'API (fetch async).
+  useEffect(() => {
+    setSoldeBanque(dashboard.soldeBanque.toString());
+  }, [dashboard.soldeBanque]);
 
   const depensesParCategorie = useMemo(() => {
     const totaux = new Map<string, number>();

@@ -17,6 +17,12 @@ export function SettingsPage() {
 
   useEffect(() => () => window.clearTimeout(timeoutRef.current), []);
 
+  // Resynchronise les champs quand les paramètres arrivent depuis l'API (fetch async).
+  useEffect(() => {
+    setSoldeInitial(settings.soldeInitial.toString());
+    setDevise(settings.devise);
+  }, [settings.soldeInitial, settings.devise]);
+
   const handleSave = () => {
     const normalized = soldeInitial.replace(/'/g, "").replace(/\s/g, "").replace(/,/g, ".");
     const valeur = Number(normalized);

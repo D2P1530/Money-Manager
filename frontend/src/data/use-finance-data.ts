@@ -23,9 +23,11 @@ export function useFinanceData() {
     soldeBanque: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Chargement initial depuis l'API
   useEffect(() => {
+    setLoadError(null);
     Promise.all([
       api.transactions.getAll(),
       api.subscriptions.getAll(),
@@ -39,6 +41,12 @@ export function useFinanceData() {
         setRecurringPayments(rp);
         if (st) setSettings(st);
         if (d) setDashboard(d);
+      })
+      .catch((error) => {
+        console.error("Failed to load finance data", error);
+        setLoadError(
+          "Impossible de charger vos données. Vérifiez votre connexion et réessayez.",
+        );
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -125,6 +133,7 @@ export function useFinanceData() {
 
   return {
     isLoading,
+    loadError,
     transactions,
     subscriptions,
     recurringPayments,

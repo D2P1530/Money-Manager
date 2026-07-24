@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prefetchAllRoutes, prefetchRoute } from "@/lib/prefetch";
+import { useFinanceData } from "@/data/use-finance-data";
 
 const requestIdlePolyfill: typeof window.requestIdleCallback =
   typeof window !== "undefined" && window.requestIdleCallback
@@ -42,6 +43,7 @@ const shortLabels: Record<string, string> = {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const { loadError } = useFinanceData();
 
   useEffect(() => {
     const id = requestIdlePolyfill(prefetchAllRoutes);
@@ -100,6 +102,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <p className="hidden font-mono text-xs text-ink-faint sm:block">{today}</p>
           </div>
         </header>
+        {loadError && (
+          <p
+            role="alert"
+            className="border-b border-line bg-negative/10 px-4 py-2.5 text-[13px] text-negative lg:px-8"
+          >
+            {loadError}
+          </p>
+        )}
         <main className="flex-1 overflow-x-clip px-4 py-6 pb-28 lg:px-8 lg:pb-8">{children}</main>
       </div>
 
