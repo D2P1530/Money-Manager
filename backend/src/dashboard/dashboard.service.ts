@@ -6,8 +6,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
-  findOne() {
-    return this.prisma.dashboardState.findFirst();
+  async findOne() {
+    const dashboardState = await this.prisma.dashboardState.findFirst();
+    return dashboardState ?? { id: 'singleton', soldeBanque: 0 };
   }
 
   upsert(updateDashboardDto: UpdateDashboardDto) {

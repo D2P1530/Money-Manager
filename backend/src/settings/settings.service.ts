@@ -6,8 +6,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SettingsService {
   constructor(private prisma: PrismaService) {}
 
-  findOne() {
-    return this.prisma.settings.findFirst();
+  async findOne() {
+    const settings = await this.prisma.settings.findFirst();
+    return settings ?? { id: 'singleton', soldeInitial: 0, devise: 'CHF' };
   }
 
   upsert(updateSettingDto: UpdateSettingDto) {
