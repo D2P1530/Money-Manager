@@ -15,6 +15,8 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const {
     transactions,
+    addTransaction,
+    updateTransaction,
     dashboard,
     updateDashboard,
     totalDepenses,
@@ -302,6 +304,8 @@ export function DashboardPage() {
         open={quickAddOpen}
         onClose={() => setQuickAddOpen(false)}
         defaultType={quickAddType}
+        addTransaction={addTransaction}
+        updateTransaction={updateTransaction}
       />
     </div>
   );

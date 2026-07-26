@@ -15,7 +15,7 @@ import type { Transaction } from "@/data/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 export function TransactionsPage() {
-  const { transactions, deleteTransaction } = useFinanceData();
+  const { transactions, addTransaction, updateTransaction, deleteTransaction } = useFinanceData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [onglet, setOnglet] = useState<"toutes" | "depense" | "revenu">("toutes");
   const [modalOpen, setModalOpen] = useState(false);
@@ -498,6 +498,8 @@ export function TransactionsPage() {
         onClose={closeModal}
         editTarget={editTarget}
         defaultType={defaultType}
+        addTransaction={addTransaction}
+        updateTransaction={updateTransaction}
       />
     </div>
   );

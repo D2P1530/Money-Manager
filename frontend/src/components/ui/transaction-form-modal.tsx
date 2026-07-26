@@ -8,7 +8,6 @@ import { Select } from "@/components/ui/select";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { categories } from "@/data/categories";
-import { useFinanceData } from "@/data/use-finance-data";
 import type { Transaction } from "@/data/types";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -29,6 +28,8 @@ type Props = {
   onClose: () => void;
   editTarget?: Transaction | null;
   defaultType?: "depense" | "revenu";
+  addTransaction: (data: Omit<Transaction, "id">) => Promise<void>;
+  updateTransaction: (id: string, data: Partial<Transaction>) => Promise<void>;
 };
 
 export function TransactionFormModal({
@@ -36,9 +37,9 @@ export function TransactionFormModal({
   onClose,
   editTarget = null,
   defaultType = "depense",
+  addTransaction,
+  updateTransaction,
 }: Props) {
-  const { addTransaction, updateTransaction } = useFinanceData();
-
   const {
     register,
     handleSubmit,
