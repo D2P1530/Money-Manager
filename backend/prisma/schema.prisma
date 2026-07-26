@@ -56,7 +56,6 @@ model RecurringPayment {
 model Settings {
   id           String @id @default(cuid())
   soldeInitial Float
-  devise       String
 }
 
 model DashboardState {

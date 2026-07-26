@@ -12,7 +12,7 @@ Construit avec **React + Vite** (frontend) et **NestJS + Prisma + SQLite** (back
 - **Transactions** — ajout, modification, suppression avec recherche et filtres
 - **Paiements récurrents** — abonnements et revenus/dépenses récurrents
 - **Analyses** — graphiques de flux mensuels et dépenses par catégorie
-- **Paramètres** — solde initial et devise
+- **Paramètres** — solde initial, export des données et suppression complète
 
 ---
 

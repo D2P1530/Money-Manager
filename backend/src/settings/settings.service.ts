@@ -8,19 +8,17 @@ export class SettingsService {
 
   async findOne() {
     const settings = await this.prisma.settings.findFirst();
-    return settings ?? { id: 'singleton', soldeInitial: 0, devise: 'CHF' };
+    return settings ?? { id: 'singleton', soldeInitial: 0 };
   }
 
   upsert(updateSettingDto: UpdateSettingDto) {
     const soldeInitial = updateSettingDto?.soldeInitial ?? 0;
-    const devise = updateSettingDto?.devise ?? 'CHF';
     return this.prisma.settings.upsert({
       where: { id: 'singleton' },
-      update: { soldeInitial, devise },
+      update: { soldeInitial },
       create: {
         id: 'singleton',
         soldeInitial,
-        devise,
       },
     });
   }

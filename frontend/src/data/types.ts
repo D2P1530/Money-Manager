@@ -33,7 +33,6 @@ export type RecurringPayment = {
 
 export type Settings = {
   soldeInitial: number;
-  devise: string;
 };
 
 export type DashboardState = {

@@ -17,7 +17,6 @@ export function useFinanceData() {
   >([]);
   const [settings, setSettings] = useState<Settings>({
     soldeInitial: 0,
-    devise: "CHF",
   });
   const [dashboard, setDashboard] = useState<DashboardState>({
     soldeBanque: 0,
