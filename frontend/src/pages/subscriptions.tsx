@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { Amount } from "@/components/ui/amount";
 import { categories } from "@/data/categories"
 import { useFinanceData } from "@/data/use-finance-data";
-import type { RecurringPayment } from "@/data/types";
+import type { RecurringPayment, Subscription } from "@/data/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -43,14 +43,19 @@ export function SubscriptionsPage() {
     subscriptions,
     addSubscription,
     updateSubscription,
+    deleteSubscription,
     recurringPayments,
     addRecurringPayment,
+    updateRecurringPayment,
     deleteRecurringPayment,
   } = useFinanceData();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [subModalOpen, setSubModalOpen] = useState(false);
   const [recurringModalOpen, setRecurringModalOpen] = useState(false);
+  const [editSubTarget, setEditSubTarget] = useState<Subscription | null>(null);
+  const [deleteSubTarget, setDeleteSubTarget] = useState<Subscription | null>(null);
+  const [editRecurringTarget, setEditRecurringTarget] = useState<RecurringPayment | null>(null);
   const [deleteRecurringTarget, setDeleteRecurringTarget] = useState<RecurringPayment | null>(null);
 
   const subForm = useForm<SubFormValues>({
@@ -66,10 +71,42 @@ export function SubscriptionsPage() {
   // Quick action from dashboard: ?ajouter=1
   useEffect(() => {
     if (searchParams.get("ajouter")) {
+      setEditSubTarget(null);
       setSubModalOpen(true);
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (!subModalOpen) return;
+    if (editSubTarget) {
+      subForm.reset({
+        nom: editSubTarget.nom,
+        categorie: editSubTarget.categorie,
+        montant: editSubTarget.montant,
+        periodicite: editSubTarget.periodicite,
+        prochainPaiement: editSubTarget.prochainPaiement,
+      });
+    } else {
+      subForm.reset({ periodicite: "mensuel" });
+    }
+  }, [subModalOpen, editSubTarget, subForm]);
+
+  useEffect(() => {
+    if (!recurringModalOpen) return;
+    if (editRecurringTarget) {
+      recurringForm.reset({
+        nom: editRecurringTarget.nom,
+        categorie: editRecurringTarget.categorie,
+        montant: editRecurringTarget.montant,
+        type: editRecurringTarget.type,
+        periodicite: editRecurringTarget.periodicite,
+        prochainPaiement: editRecurringTarget.prochainPaiement,
+      });
+    } else {
+      recurringForm.reset({ type: "depense", periodicite: "mensuel", prochainPaiement: today() });
+    }
+  }, [recurringModalOpen, editRecurringTarget, recurringForm]);
 
   // ── Subscriptions ──────────────────────────────────────────────────────
   const actives = useMemo(() => subscriptions.filter((s) => s.actif), [subscriptions]);
@@ -85,16 +122,47 @@ export function SubscriptionsPage() {
   );
 
   const onSubSubmit = (data: SubFormValues) => {
-    addSubscription({
-      nom: data.nom,
-      categorie: data.categorie,
-      montant: data.montant,
-      periodicite: data.periodicite,
-      prochainPaiement: data.prochainPaiement,
-      actif: true,
-    });
-    subForm.reset({ periodicite: "mensuel" });
+    if (editSubTarget) {
+      updateSubscription(editSubTarget.id, {
+        nom: data.nom,
+        categorie: data.categorie,
+        montant: data.montant,
+        periodicite: data.periodicite,
+        prochainPaiement: data.prochainPaiement,
+      });
+    } else {
+      addSubscription({
+        nom: data.nom,
+        categorie: data.categorie,
+        montant: data.montant,
+        periodicite: data.periodicite,
+        prochainPaiement: data.prochainPaiement,
+        actif: true,
+      });
+    }
     setSubModalOpen(false);
+    setEditSubTarget(null);
+  };
+
+  const openAddSub = () => {
+    setEditSubTarget(null);
+    setSubModalOpen(true);
+  };
+
+  const openEditSub = (subscription: Subscription) => {
+    setEditSubTarget(subscription);
+    setSubModalOpen(true);
+  };
+
+  const closeSubModal = () => {
+    setSubModalOpen(false);
+    setEditSubTarget(null);
+  };
+
+  const confirmDeleteSub = () => {
+    if (!deleteSubTarget) return;
+    deleteSubscription(deleteSubTarget.id);
+    setDeleteSubTarget(null);
   };
 
   const toggleSubscription = (id: string) => {
@@ -130,16 +198,42 @@ export function SubscriptionsPage() {
   const hasAnnuel = recurringPayments.some((p) => p.periodicite === "annuel");
 
   const onRecurringSubmit = (data: RecurringFormValues) => {
-    addRecurringPayment({
-      nom: data.nom,
-      categorie: data.categorie,
-      montant: data.montant,
-      type: data.type,
-      periodicite: data.periodicite,
-      prochainPaiement: data.prochainPaiement,
-    });
-    recurringForm.reset({ type: "depense", periodicite: "mensuel", prochainPaiement: today() });
+    if (editRecurringTarget) {
+      updateRecurringPayment(editRecurringTarget.id, {
+        nom: data.nom,
+        categorie: data.categorie,
+        montant: data.montant,
+        type: data.type,
+        periodicite: data.periodicite,
+        prochainPaiement: data.prochainPaiement,
+      });
+    } else {
+      addRecurringPayment({
+        nom: data.nom,
+        categorie: data.categorie,
+        montant: data.montant,
+        type: data.type,
+        periodicite: data.periodicite,
+        prochainPaiement: data.prochainPaiement,
+      });
+    }
     setRecurringModalOpen(false);
+    setEditRecurringTarget(null);
+  };
+
+  const openAddRecurring = () => {
+    setEditRecurringTarget(null);
+    setRecurringModalOpen(true);
+  };
+
+  const openEditRecurring = (payment: RecurringPayment) => {
+    setEditRecurringTarget(payment);
+    setRecurringModalOpen(true);
+  };
+
+  const closeRecurringModal = () => {
+    setRecurringModalOpen(false);
+    setEditRecurringTarget(null);
   };
 
   const confirmDeleteRecurring = () => {
@@ -165,7 +259,7 @@ export function SubscriptionsPage() {
               Services et plateformes facturés automatiquement.
             </p>
           </div>
-          <Button onClick={() => setSubModalOpen(true)} className="shrink-0 self-start">
+          <Button onClick={openAddSub} className="shrink-0 self-start">
             <Plus className="h-4 w-4" aria-hidden />
             Ajouter un abonnement
           </Button>
@@ -250,6 +344,22 @@ export function SubscriptionsPage() {
                       >
                         Suspendre
                       </Button>
+                      <button
+                        type="button"
+                        aria-label={`Modifier ${subscription.nom}`}
+                        className="flex h-9 w-9 items-center justify-center rounded text-ink-faint transition-colors hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        onClick={() => openEditSub(subscription)}
+                      >
+                        <Pencil className="h-4 w-4" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Supprimer ${subscription.nom}`}
+                        className="flex h-9 w-9 items-center justify-center rounded text-ink-faint transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        onClick={() => setDeleteSubTarget(subscription)}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden />
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -295,6 +405,22 @@ export function SubscriptionsPage() {
                       >
                         Réactiver
                       </Button>
+                      <button
+                        type="button"
+                        aria-label={`Modifier ${subscription.nom}`}
+                        className="flex h-9 w-9 items-center justify-center rounded text-ink-faint transition-colors hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        onClick={() => openEditSub(subscription)}
+                      >
+                        <Pencil className="h-4 w-4" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Supprimer ${subscription.nom}`}
+                        className="flex h-9 w-9 items-center justify-center rounded text-ink-faint transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        onClick={() => setDeleteSubTarget(subscription)}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden />
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -319,7 +445,7 @@ export function SubscriptionsPage() {
             </p>
           </div>
           <Button
-            onClick={() => setRecurringModalOpen(true)}
+            onClick={openAddRecurring}
             variant="outline"
             className="shrink-0 self-start"
           >
@@ -385,7 +511,7 @@ export function SubscriptionsPage() {
               <p className="text-sm text-ink-soft">Aucun paiement récurrent enregistré.</p>
               <button
                 className="mt-2 text-xs text-accent underline underline-offset-2 hover:opacity-80"
-                onClick={() => setRecurringModalOpen(true)}
+                onClick={openAddRecurring}
               >
                 Ajouter le premier
               </button>
@@ -430,6 +556,14 @@ export function SubscriptionsPage() {
                     </div>
                     <button
                       type="button"
+                      aria-label={`Modifier ${payment.nom}`}
+                      className="flex h-11 w-11 items-center justify-center rounded text-ink-faint transition-colors hover:bg-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      onClick={() => openEditRecurring(payment)}
+                    >
+                      <Pencil className="h-4 w-4" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
                       aria-label={`Supprimer ${payment.nom}`}
                       className="flex h-11 w-11 items-center justify-center rounded text-ink-faint transition-colors hover:bg-negative/10 hover:text-negative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       onClick={() => setDeleteRecurringTarget(payment)}
@@ -445,6 +579,37 @@ export function SubscriptionsPage() {
       </section>
 
       {/* ── Modals ────────────────────────────────────────────────────── */}
+
+      {/* Delete subscription */}
+      <Modal
+        open={deleteSubTarget !== null}
+        onClose={() => setDeleteSubTarget(null)}
+        title="Supprimer l'abonnement"
+      >
+        <p className="text-[13px] text-ink-soft">
+          Supprimer cet abonnement ? Cette opération est irréversible.
+        </p>
+        {deleteSubTarget && (
+          <div className="mt-3 rounded border border-line bg-sunken px-4 py-3 text-[13px]">
+            <p className="font-medium text-ink">{deleteSubTarget.nom}</p>
+            <p className="mt-0.5 font-mono tabular-nums text-ink-soft">
+              {formatCurrency(deleteSubTarget.montant)}
+              {" · "}
+              {deleteSubTarget.periodicite === "mensuel" ? "/ mois" : "/ an"}
+              {" · "}
+              {formatDate(deleteSubTarget.prochainPaiement)}
+            </p>
+          </div>
+        )}
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setDeleteSubTarget(null)}>
+            Annuler
+          </Button>
+          <Button variant="danger" onClick={confirmDeleteSub}>
+            Supprimer
+          </Button>
+        </div>
+      </Modal>
 
       {/* Delete recurring payment */}
       <Modal
@@ -477,11 +642,11 @@ export function SubscriptionsPage() {
         </div>
       </Modal>
 
-      {/* New recurring payment */}
+      {/* New / edit recurring payment */}
       <Modal
         open={recurringModalOpen}
-        onClose={() => setRecurringModalOpen(false)}
-        title="Nouveau paiement récurrent"
+        onClose={closeRecurringModal}
+        title={editRecurringTarget ? "Modifier le paiement récurrent" : "Nouveau paiement récurrent"}
       >
         <form className="space-y-4" onSubmit={recurringForm.handleSubmit(onRecurringSubmit)}>
           <Field label="Nom" error={recurringForm.formState.errors.nom?.message}>
@@ -546,16 +711,16 @@ export function SubscriptionsPage() {
             )}
           </Field>
           <Button type="submit" className="w-full">
-            Enregistrer
+            {editRecurringTarget ? "Enregistrer les modifications" : "Enregistrer"}
           </Button>
         </form>
       </Modal>
 
-      {/* New subscription */}
+      {/* New / edit subscription */}
       <Modal
         open={subModalOpen}
-        onClose={() => setSubModalOpen(false)}
-        title="Nouvel abonnement"
+        onClose={closeSubModal}
+        title={editSubTarget ? "Modifier l'abonnement" : "Nouvel abonnement"}
       >
         <form className="space-y-4" onSubmit={subForm.handleSubmit(onSubSubmit)}>
           <Field label="Nom" error={subForm.formState.errors.nom?.message}>
@@ -609,7 +774,7 @@ export function SubscriptionsPage() {
             </Field>
           </div>
           <Button type="submit" className="w-full">
-            Enregistrer l'abonnement
+            {editSubTarget ? "Enregistrer les modifications" : "Enregistrer l'abonnement"}
           </Button>
         </form>
       </Modal>
