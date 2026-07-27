@@ -23,7 +23,7 @@ export class ScheduledPaymentsService {
 
   constructor(private prisma: PrismaService) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Europe/Zurich' })
   async processDuePayments() {
     const today = todayIso();
 
